@@ -29,7 +29,7 @@ export default function RootLayout({
         <ChatbotWidget />
         <Script
           src="https://chattybot-tawny.vercel.app/widget.js"
-          data-site-id="4613a808-8c84-4cff-a9cf-1ec922b0e420"
+          data-site-id="6d9827a6-9066-4201-bebd-84aaed63b856"
           data-api-url="https://chattybot-0jvh.onrender.com"
           strategy="afterInteractive"
         />
