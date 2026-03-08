@@ -50,7 +50,7 @@ export function ChatbotWidget() {
                     ChattyBot Demo
                   </h4>
                   <p className="text-white/60 text-sm mb-6">
-                    This is a demo widget. Configure NEXT_PUBLIC_CHATBOT_URL in your .env.local file to connect your chatbot.
+                    Set NEXT_PUBLIC_CHATBOT_URL to your chat embed URL, or ensure widget.js is deployed at chattybot-tawny.vercel.app/widget.js
                   </p>
                   <div className="w-full space-y-3">
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-left">
