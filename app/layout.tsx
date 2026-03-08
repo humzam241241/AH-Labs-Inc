@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { ChattyBotEmbed } from "@/components/chattybot-embed"
 import { ChatbotWidget } from "@/components/chatbot-widget"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -26,8 +26,13 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <ChattyBotEmbed />
         <ChatbotWidget />
+        <Script
+          src="https://chattybot-tawny.vercel.app/widget.js"
+          data-site-id="4613a808-8c84-4cff-a9cf-1ec922b0e420"
+          data-api-url="https://chattybot-0jvh.onrender.com"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
