@@ -54,13 +54,13 @@ export default function AboutPage() {
             <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-12">
               <h2 className="text-3xl font-bold text-white mb-6">Our Mission</h2>
               <p className="text-white/70 text-lg leading-relaxed mb-4">
-                At AH Labs, we're building the intelligent systems that bridge the gap between software and hardware. As an engineering-driven company, we combine expertise in artificial intelligence, automation, and robotics to create solutions that transform how businesses operate.
+                At AH Labs, we&apos;re building the intelligent systems that bridge the gap between software and hardware. As an engineering-driven company, we combine expertise in artificial intelligence, automation, and robotics to create solutions that transform how businesses operate.
               </p>
               <p className="text-white/70 text-lg leading-relaxed mb-4">
                 Our focus is on two core areas: AI automation tools that streamline business operations and autonomous drone systems that bring intelligence to the physical world. Each project we undertake is driven by a commitment to innovation, technical excellence, and real-world impact.
               </p>
               <p className="text-white/70 text-lg leading-relaxed">
-                We believe the future belongs to systems that can think, learn, and act autonomously. Whether it's a chatbot that understands natural language or a drone that navigates complex environments, we're pushing the boundaries of what's possible with modern technology.
+                We believe the future belongs to systems that can think, learn, and act autonomously. Whether it&apos;s a chatbot that understands natural language or a drone that navigates complex environments, we&apos;re pushing the boundaries of what&apos;s possible with modern technology.
               </p>
             </div>
           </motion.div>

@@ -55,7 +55,7 @@ export default function ContactPage() {
               Get In Touch
             </h1>
             <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Let's discuss how we can build intelligent systems for your business
+              Let&apos;s discuss how we can build intelligent systems for your business
             </p>
           </motion.div>
 
@@ -70,7 +70,7 @@ export default function ContactPage() {
                   Contact Information
                 </h2>
                 <p className="text-white/70 mb-8 leading-relaxed">
-                  Ready to transform your business with AI automation or autonomous systems? Reach out and let's start a conversation.
+                  Ready to transform your business with AI automation or autonomous systems? Reach out and let&apos;s start a conversation.
                 </p>
 
                 <div className="space-y-6">
@@ -143,7 +143,7 @@ export default function ContactPage() {
                       Message Sent!
                     </h3>
                     <p className="text-white/60 text-center">
-                      Thank you for reaching out. We'll get back to you soon.
+                      Thank you for reaching out. We&apos;ll get back to you soon.
                     </p>
                   </motion.div>
                 ) : (
