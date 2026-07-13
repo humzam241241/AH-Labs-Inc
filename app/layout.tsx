@@ -7,9 +7,9 @@ import { Footer } from "@/components/footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AH Labs Inc - Autonomous Drone Engineering",
+  title: "AH Labs Inc - Engineering Studio",
   description:
-    "Developing autonomous drone systems for LiDAR mapping, onboard robotics, and real-world aerial data collection.",
+    "An engineering studio developing robotics, autonomous systems, embedded electronics, and AI-enabled products. Home of the LiDAR mapping drone program.",
 }
 
 export default function RootLayout({
