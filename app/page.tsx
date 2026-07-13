@@ -1,11 +1,25 @@
-import { Hero } from "@/components/hero"
-import { ProjectGrid } from "@/components/project-grid"
+import Link from "next/link"
+import { MediaPlaceholder, SectionIntro, TextLink } from "@/components/design-system"
+
+const focus = ["Mechanical systems", "Embedded electronics", "Robotics and autonomy", "Simulation and testing", "Onboard computing", "System integration"]
+const process = ["Define", "Design", "Prototype", "Test", "Iterate"]
+const principles = ["Build before claiming", "Validate through testing", "Integrate across disciplines", "Document decisions", "Iterate from evidence"]
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <ProjectGrid />
-    </>
-  )
+  return <>
+    <section className="site-shell grid min-h-[calc(100vh-4rem)] gap-10 py-14 lg:grid-cols-[1fr_540px] lg:items-end lg:py-20">
+      <div><p className="kicker">AH Labs Inc.</p><p className="mt-4 font-mono text-sm uppercase tracking-[0.18em] text-[var(--muted)]">Engineering Studio</p><h1 className="h1 mt-10 max-w-5xl">Robotic systems, embedded electronics, and autonomous platforms.</h1><p className="lede mt-8 max-w-3xl">AH Labs is an early-stage engineering studio developing applied engineering prototypes across mechanical, electrical, and software disciplines.</p><div className="mt-10 flex flex-col gap-3 sm:flex-row"><Link href="/projects/autonomous-lidar-mapping-drone" className="button-primary">Flagship project</Link><Link href="/contact" className="button-secondary">Contact</Link></div></div>
+      <div className="lg:pb-2"><MediaPlaceholder label="CAD render placeholder" note="Reserved for verified prototype media, CAD render, or engineering diagram." /><div className="mt-4 grid grid-cols-2 border-y border-[var(--line)] text-sm"><div className="py-4 pr-4"><p className="label">Current venture</p><p className="mt-2">Autonomous LiDAR Mapping Drone</p></div><div className="border-l border-[var(--line)] py-4 pl-4"><p className="label">Status</p><p className="mt-2">Under development</p></div></div></div>
+    </section>
+
+    <section className="section"><div className="site-shell"><SectionIntro index="01" eyebrow="Studio focus" title="Development work spans the interfaces between structure, electronics, sensing, compute, and test."><p>The studio is intentionally multidisciplinary. Projects are treated as integrated systems rather than isolated components.</p></SectionIntro><div className="mt-12 grid border-t border-[var(--line)] md:grid-cols-2 lg:grid-cols-3">{focus.map((item, i)=><div key={item} className="min-h-32 border-b border-[var(--line)] p-6 md:border-r"><p className="font-mono text-xs text-[var(--accent)]">{String(i+1).padStart(2,"0")}</p><h3 className="mt-8 text-2xl tracking-[-0.03em]">{item}</h3></div>)}</div></div></section>
+
+    <section className="section"><div className="site-shell grid gap-10 lg:grid-cols-[1fr_480px]"><div><p className="kicker">02 / Flagship venture</p><h2 className="h2 mt-4">Autonomous LiDAR Mapping Drone</h2><p className="lede mt-6">A prototype platform exploring indoor spatial data collection using autonomous flight hardware, onboard compute, ROS 2, and LiDAR sensing.</p><div className="mt-8"><div className="meta-row"><span className="label">Status</span><span>Under development</span></div><div className="meta-row"><span className="label">Problem</span><span>How aerial robotic platforms can collect useful spatial data in constrained built environments.</span></div><div className="meta-row"><span className="label">Disciplines</span><span>Mechanical design, embedded electronics, robotics software, sensing, onboard computing, test.</span></div><div className="meta-row"><span className="label">Milestones</span><span>Airframe architecture, electronics integration, LiDAR data pipeline, indoor mapping proof-of-concept.</span></div></div><Link href="/projects/autonomous-lidar-mapping-drone" className="button-secondary mt-8">Open project page</Link></div><MediaPlaceholder label="Prototype photograph placeholder" note="Use only real drone, PCB, CAD, mapping, or test imagery when available." /></div></section>
+
+    <section className="section"><div className="site-shell"><SectionIntro index="03" eyebrow="Engineering process" title="Work progresses through evidence, not presentation polish." /><ol className="mt-12 grid border-y border-[var(--line)] lg:grid-cols-5">{process.map((step,i)=><li key={step} className="border-b border-[var(--line)] p-6 lg:border-b-0 lg:border-r"><p className="font-mono text-xs text-[var(--accent)]">{String(i+1).padStart(2,"0")}</p><h3 className="h3 mt-10">{step}</h3></li>)}</ol></div></section>
+
+    <section className="section"><div className="site-shell"><SectionIntro index="04" eyebrow="Studio principles" title="Ground rules for early-stage engineering work." /><div className="mt-12 max-w-4xl divide-y divide-[var(--line)]">{principles.map(p=><p key={p} className="py-5 text-2xl tracking-[-0.03em]">{p}</p>)}</div></div></section>
+
+    <section className="section"><div className="site-shell grid gap-8 md:grid-cols-[1fr_360px]"><h2 className="h2">Discuss engineering collaboration, research collaboration, internship interest, or a general inquiry.</h2><p className="body-copy">Use the <TextLink href="/contact">contact page</TextLink> to route the inquiry. AH Labs is early-stage; project scope and availability should be confirmed directly.</p></div></section>
+  </>
 }
