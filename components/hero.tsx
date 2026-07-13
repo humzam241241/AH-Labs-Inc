@@ -3,29 +3,29 @@
 import React from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ArrowRight, Sparkles, Bot, Plane } from "lucide-react"
+import { ArrowRight, Bot, Cpu, Workflow } from "lucide-react"
 import { DisplayCards } from "./ui/display-cards"
 
 const heroCards = [
   {
     id: 1,
-    title: "AI Automation",
-    description: "Intelligent chatbots and automation systems that handle customer support, lead capture, and business workflows seamlessly.",
+    title: "AI Products",
+    description: "Production-ready software for customer support, lead capture, document workflows, and operational decision-making.",
     icon: Bot,
     gradient: "from-blue-600/80 to-cyan-600/80",
   },
   {
     id: 2,
-    title: "Autonomous Drones",
-    description: "Advanced drone systems with computer vision, sensor fusion, and autonomous navigation capabilities for real-world applications.",
-    icon: Plane,
+    title: "Business Automation",
+    description: "Purpose-built systems that connect data, communications, and repetitive workflows into reliable operating tools.",
+    icon: Workflow,
     gradient: "from-purple-600/80 to-pink-600/80",
   },
   {
     id: 3,
-    title: "Innovation First",
-    description: "Combining cutting-edge software and hardware engineering to build the intelligent systems of tomorrow.",
-    icon: Sparkles,
+    title: "Robotics R&D",
+    description: "Applied research in autonomous systems, embedded hardware, LiDAR mapping, and edge AI.",
+    icon: Cpu,
     gradient: "from-orange-600/80 to-red-600/80",
   },
 ]
@@ -34,7 +34,7 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-      
+
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
@@ -55,7 +55,7 @@ export function Hero() {
               className="inline-block mb-4 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full"
             >
               <span className="text-blue-400 text-sm font-semibold">
-                Engineering the Future
+                Applied AI, automation, and robotics
               </span>
             </motion.div>
 
@@ -65,9 +65,9 @@ export function Hero() {
               transition={{ delay: 0.3 }}
               className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Intelligent Systems for{" "}
+              We build systems that turn complex work into{" "}
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Modern Businesses
+                usable products
               </span>
             </motion.h1>
 
@@ -77,7 +77,7 @@ export function Hero() {
               transition={{ delay: 0.4 }}
               className="text-xl text-white/70 mb-8 leading-relaxed"
             >
-              We build AI automation tools and autonomous drone systems that transform how businesses operate.
+              AH Labs develops AI software, workflow automation, digital platforms, and autonomous hardware prototypes for real operating problems.
             </motion.p>
 
             <motion.div
@@ -90,7 +90,7 @@ export function Hero() {
                 href="/projects"
                 className="group px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center justify-center space-x-2"
               >
-                <span>View Projects</span>
+                <span>Explore the portfolio</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
 
@@ -98,7 +98,7 @@ export function Hero() {
                 href="/contact"
                 className="px-8 py-4 bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-full font-semibold hover:bg-white/10 transition-all flex items-center justify-center"
               >
-                Start a Conversation
+                Discuss a project
               </Link>
             </motion.div>
           </motion.div>
