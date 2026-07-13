@@ -9,7 +9,7 @@ const projects = [
   {
     title: "LiDAR Mapping Drone",
     description:
-      "An active autonomous-drone prototype combining custom flight electronics, NVIDIA Jetson compute, ROS 2, and a tilt-mounted RPLIDAR for 3D spatial mapping.",
+      "AH Labs' flagship engineering venture: an autonomous-drone prototype combining custom flight electronics, NVIDIA Jetson compute, ROS 2, and a tilt-mounted RPLIDAR for 3D spatial mapping.",
     icon: Plane,
     href: "/projects/drone",
     gradient: "from-purple-600/80 to-pink-600/80",
@@ -29,10 +29,10 @@ export function ProjectGrid() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Current Drone Program
+            Flagship Venture
           </h2>
           <p className="text-xl text-white/60 max-w-2xl mx-auto">
-            One integrated platform focused on autonomous flight, LiDAR mapping, and onboard robotics.
+            The first active program within AH Labs: an integrated platform for autonomous flight, LiDAR mapping, and onboard robotics.
           </p>
         </motion.div>
 
