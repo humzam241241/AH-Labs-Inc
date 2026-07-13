@@ -1,29 +1,16 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AH Labs Inc - Engineering Studio",
-  description:
-    "An engineering studio developing robotics, autonomous systems, embedded electronics, and AI-enabled products. Home of the LiDAR mapping drone program.",
+  metadataBase: new URL("https://ahlabs.com"),
+  title: { default: "AH Labs Inc. | Engineering Studio", template: "%s | AH Labs Inc." },
+  description: "AH Labs Inc. is an early-stage engineering studio developing robotic systems, embedded electronics, mechanical systems, and autonomous platforms.",
+  openGraph: { title: "AH Labs Inc. | Engineering Studio", description: "Early-stage engineering studio for robotics, embedded electronics, mechanical systems, and autonomous platforms.", type: "website" },
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-      </body>
-    </html>
-  )
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body><Navbar /><main>{children}</main><Footer /></body></html>
 }
