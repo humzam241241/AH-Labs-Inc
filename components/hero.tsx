@@ -9,22 +9,22 @@ import { DisplayCards } from "./ui/display-cards"
 const heroCards = [
   {
     id: 1,
-    title: "Autonomous Flight",
-    description: "An integrated aerial robotics platform built around custom flight control, onboard compute, and sensor integration.",
+    title: "Autonomous Systems",
+    description: "Integrated robotic platforms combining mechanical design, embedded electronics, sensing, and onboard compute.",
     icon: Plane,
     gradient: "from-blue-600/80 to-cyan-600/80",
   },
   {
     id: 2,
-    title: "LiDAR Mapping",
-    description: "A tilt-enabled 2D LiDAR system under development for capturing 3D spatial data indoors and on worksites.",
+    title: "Spatial Intelligence",
+    description: "LiDAR-based sensing and mapping systems developed for indoor environments, worksites, and future field applications.",
     icon: Map,
     gradient: "from-purple-600/80 to-pink-600/80",
   },
   {
     id: 3,
-    title: "Onboard Robotics",
-    description: "ROS 2, NVIDIA Jetson compute, custom electronics, and mechanical design combined in one prototype.",
+    title: "Engineering Prototypes",
+    description: "Mechanical systems, custom electronics, ROS 2, NVIDIA Jetson compute, and rapid prototyping brought together in working builds.",
     icon: Cpu,
     gradient: "from-orange-600/80 to-red-600/80",
   },
@@ -43,21 +43,21 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="text-center lg:text-left">
             <div className="inline-block mb-4 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full">
-              <span className="text-blue-400 text-sm font-semibold">Autonomous Drone R&amp;D</span>
+              <span className="text-blue-400 text-sm font-semibold">Engineering Studio</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Drone systems built for{" "}
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">spatial intelligence</span>
+              Building intelligent systems from{" "}
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">concept to prototype</span>
             </h1>
 
             <p className="text-xl text-white/70 mb-8 leading-relaxed">
-              AH Labs Inc is developing a drone platform for LiDAR mapping, onboard robotics, and real-world aerial data collection.
+              AH Labs Inc is an engineering studio developing robotics, autonomous systems, embedded electronics, and AI-enabled products. Our flagship venture is a LiDAR mapping drone platform.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link href="/projects/drone" className="group px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center justify-center space-x-2">
-                <span>Explore the Drone Program</span>
+                <span>Explore the Flagship Venture</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href="/contact" className="px-8 py-4 bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-full font-semibold hover:bg-white/10 transition-all flex items-center justify-center">
