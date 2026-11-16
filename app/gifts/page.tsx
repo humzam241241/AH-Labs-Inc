@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { cardImage } from "@/lib/card-catalog"
+import { customPrintSlug, printedGiftImage, printRequestHref } from "@/lib/printed-gifts"
 
 export const metadata: Metadata = {
   title: "Gift Shop",
@@ -29,16 +30,18 @@ export default function GiftsPage() {
           <div><p className="product-kind">Cards for every occasion</p><h3>Gift cards</h3><p>Birthday, wedding, graduation, holidays, and all the little moments between.</p><span className="choice-link">Browse greeting cards <i className="css-arrow" aria-hidden="true" /></span></div>
         </Link>
         <Link href="/gifts/3d-printed" className="gift-choice-card choice-printed">
-          <ImageSlot label="3D-printed gifts" />
+          <div className="shop-card-art printed-shop-art"><Image src={printedGiftImage("nameplate")} alt="Cream custom 3D-printed desk nameplate with raised terracotta letters" fill sizes="(max-width: 850px) 100vw, 50vw" /></div>
           <div><p className="product-kind">Personalized objects</p><h3>3D-printed gifts</h3><p>Useful keepsakes and playful pieces, personalized with names, colours, and details.</p><span className="choice-link">Explore 3D gifts <i className="css-arrow" aria-hidden="true" /></span></div>
         </Link>
       </div>
     </section>
 
     <section className="custom-gift-section shop-custom"><div className="site-shell custom-gift-grid">
-      <ImageSlot label="Your idea, made personal" />
-      <div><p className="eyebrow">Custom design</p><h2>Start with an idea.</h2><p>Bring a sketch, a photo, a name, or a half-formed idea. We can help shape a one-of-a-kind card or gift.</p><Link href="/contact" className="round-button">Ask about a custom design <span className="css-arrow" aria-hidden="true" /></Link></div>
+      <div className="card-feature-image printed-custom-preview"><Image src={printedGiftImage("photo-plaque")} alt="Custom 3D-printed photo plaque with a raised mountain landscape" fill sizes="(max-width: 850px) 100vw, 50vw" /></div>
+      <div><p className="eyebrow">Custom design</p><h2>Start with an idea.</h2><p>Bring a sketch, a photo, a name, or a half-formed idea. We can help shape a one-of-a-kind card or gift.</p><Link href={printRequestHref(customPrintSlug)} className="round-button">Request a custom 3D design <span className="css-arrow" aria-hidden="true" /></Link></div>
     </div></section>
+
+    <section className="shop-delivery-note"><div className="site-shell"><div><p className="eyebrow">Delivery</p><h2>Have an order ready?</h2><p>Choose a preferred delivery date and time, then text the request to AH Gifts for confirmation.</p></div><Link href="/gifts/delivery" className="round-button">Request a delivery time <span className="css-arrow" aria-hidden="true" /></Link></div></section>
 
     <section className="bulk-section"><div className="site-shell bulk-grid">
       <div><p className="eyebrow">For your whole group</p><h2>Bulk card orders.</h2><p>Matching cards for weddings, events, teams, holidays, or customer thank-yous. Ask us about quantity, wording, and a design that fits.</p><Link href="/contact" className="round-button">Request a bulk quote <span className="css-arrow" aria-hidden="true" /></Link></div>
