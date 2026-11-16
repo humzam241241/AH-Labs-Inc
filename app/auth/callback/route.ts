@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
+function safeNext(value: string | null) {
+  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/account"
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
@@ -8,5 +12,5 @@ export async function GET(request: Request) {
     const supabase = createSupabaseServerClient()
     await supabase.auth.exchangeCodeForSession(code)
   }
-  return NextResponse.redirect(new URL("/account", url.origin))
+  return NextResponse.redirect(new URL(safeNext(url.searchParams.get("next")), url.origin))
 }
