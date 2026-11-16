@@ -42,7 +42,7 @@ export default function CardsPage() {
     <section className="gift-shop site-shell" id="card-collection">
       <div className="section-heading"><div><p className="eyebrow">The card collection</p><h2>Find their kind<br />of card.</h2></div><p>Personal wording and colours available</p></div>
       <div className="category-grid">{cardCategories.map(([id, name, description]) => <article className="category-card" id={id} key={id}>
-        <ImageSlot label={name} /><div><h3>{name}</h3><p>{description}</p><Link href="/contact">Ask about this card <span className="css-arrow" aria-hidden="true" /></Link></div>
+        <ImageSlot label={name} /><div><h3>{name}</h3><p>{description}</p><Link href={`/gifts/cards/${id}`}>View 10 designs <span className="css-arrow" aria-hidden="true" /></Link></div>
       </article>)}</div>
     </section>
 
