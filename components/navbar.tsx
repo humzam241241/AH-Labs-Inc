@@ -23,6 +23,7 @@ export function Navbar() {
         </div>
         <Link href="/gifts/3d-printed">3D gifts</Link>
         <Link href="/gifts/cards#bulk-orders">Bulk orders</Link>
+        <Link href="/account" className={pathname.startsWith("/account") ? "active" : ""}>My account</Link>
         <div className="nav-dropdown">
           <Link href="/contact">Help</Link>
           <div className="nav-dropdown-menu help-menu">
@@ -45,6 +46,7 @@ export function Navbar() {
       {cardLinks.map(([label, id]) => <Link className="mobile-card-link" key={id} href={`/gifts/cards/${id}`} onClick={() => setOpen(false)}>{label}</Link>)}
       <Link href="/gifts/3d-printed" onClick={() => setOpen(false)}>3D-printed gifts<span className="css-arrow" /></Link>
       <Link href="/gifts/cards#bulk-orders" onClick={() => setOpen(false)}>Bulk orders<span className="css-arrow" /></Link>
+      <Link href="/account" onClick={() => setOpen(false)}>My account<span className="css-arrow" /></Link>
       <p className="mobile-nav-label">Help</p>
       <Link href="/contact" onClick={() => setOpen(false)}>Contact us</Link>
       <Link href="/payments" onClick={() => setOpen(false)}>Payment questions</Link>
