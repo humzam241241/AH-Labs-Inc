@@ -1,6 +1,7 @@
 "use client"
 
 import { FormEvent, useRef, useState } from "react"
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
 
 type Product = {
   slug: string
@@ -11,6 +12,7 @@ type Product = {
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024
 const ACCEPTED_TYPES = new Set(["application/pdf", "image/jpeg", "image/png"])
+const PENDING_ORDER_KEY = "ah-gifts:pending-order"
 
 function requestText(form: HTMLFormElement, product: Product) {
   const data = new FormData(form)
@@ -43,6 +45,7 @@ export function PrintRequestForm({ product, canSend }: { product: Product; canSe
   const formRef = useRef<HTMLFormElement>(null)
   const [status, setStatus] = useState("")
   const [sending, setSending] = useState(false)
+  const [placing, setPlacing] = useState(false)
 
   function validFile(file?: File | null) {
     if (!file || file.size === 0) return true
@@ -76,6 +79,41 @@ export function PrintRequestForm({ product, canSend }: { product: Product; canSe
     link.click()
     URL.revokeObjectURL(url)
     setStatus("Your request copy was downloaded with the reference file.")
+  }
+
+  async function startOrder() {
+    const form = formRef.current
+    if (!form || !form.reportValidity()) return
+    const data = new FormData(form)
+    const file = data.get("reference") as File | null
+    if (!validFile(file)) return
+
+    sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
+      version: 1,
+      kind: "3d",
+      productName: product.name,
+      reference: product.slug,
+      designOption: String(data.get("designOption") || ""),
+      sizeOption: String(data.get("sizeOption") || ""),
+      customDimensions: String(data.get("customSize") || ""),
+      personalization: String(data.get("personalization") || ""),
+      colour: String(data.get("colour") || ""),
+      details: String(data.get("details") || ""),
+      referenceFileName: file?.name || "",
+      quantity: 1,
+      createdAt: new Date().toISOString(),
+    }))
+
+    setPlacing(true)
+    setStatus("Checking your account…")
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const next = "/payments"
+    if (!user) {
+      window.location.assign(`/account?next=${encodeURIComponent(next)}`)
+      return
+    }
+    window.location.assign(next)
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -133,7 +171,8 @@ export function PrintRequestForm({ product, canSend }: { product: Product; canSe
       </div>
     </fieldset>
 
-    {canSend ? <button className="round-button form-submit" disabled={sending}>{sending ? "Sending…" : "Send request"}<span className="css-arrow" aria-hidden="true" /></button> : <div className="form-pending"><strong>Online sending is opening soon.</strong><p>Download a complete copy of your request, including your reference file, while the AH Gifts company inbox is being prepared.</p></div>}
+    {canSend ? <button className="round-button form-submit" disabled={sending || placing}>{sending ? "Sending…" : "Send request"}<span className="css-arrow" aria-hidden="true" /></button> : <div className="form-pending"><strong>Online sending is opening soon.</strong><p>Download a complete copy of your request, including your reference file, while the AH Gifts company inbox is being prepared.</p></div>}
+    <button type="button" className="round-button form-submit" onClick={startOrder} disabled={sending || placing}>{placing ? "Opening order…" : "Order this 3D gift"}<span className="css-arrow" aria-hidden="true" /></button>
     <button type="button" className="button-secondary save-request" onClick={saveCopy}>Download request copy</button>
     <p className="form-status" aria-live="polite">{status}</p>
   </form>
