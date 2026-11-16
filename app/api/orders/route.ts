@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const { error } = await admin.from("orders").insert({
       customer_id: user.id,
       order_number: orderNumber,
-      status: "pending_payment",
+      status: "pending",
       items: [items],
       notes: "Awaiting Interac e-Transfer confirmation.",
     })
