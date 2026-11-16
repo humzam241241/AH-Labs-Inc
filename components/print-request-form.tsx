@@ -175,5 +175,6 @@ export function PrintRequestForm({ product, canSend }: { product: Product; canSe
     <button type="button" className="round-button form-submit" onClick={startOrder} disabled={sending || placing}>{placing ? "Opening order…" : "Order this 3D gift"}<span className="css-arrow" aria-hidden="true" /></button>
     <button type="button" className="button-secondary save-request" onClick={saveCopy}>Download request copy</button>
     <p className="form-status" aria-live="polite">{status}</p>
+    <p className="order-form-footnote">You’ll sign in before the order is placed. Your saved specifications will follow you to the Interac e-Transfer page.</p>
   </form>
 }
