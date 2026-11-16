@@ -1,5 +1,5 @@
-import type { Metadata } from "next"
-import Link from "next/link"
-import { MediaPlaceholder } from "@/components/design-system"
-export const metadata: Metadata = { title: "Projects", description: "Project index for AH Labs engineering ventures.", openGraph: { title: "Projects | AH Labs Inc.", description: "Project index for AH Labs engineering ventures." } }
-export default function ProjectsPage(){return <section className="site-shell py-16 lg:py-24"><p className="kicker">Project index</p><h1 className="h1 mt-8 max-w-5xl">A scalable record of engineering ventures under development.</h1><p className="lede mt-8 max-w-3xl">Selected technical details are intentionally withheld while development continues.</p><article className="mt-14 grid gap-8 border-y border-[var(--line)] py-8 lg:grid-cols-[420px_1fr]"><MediaPlaceholder label="LiDAR output placeholder" note="Replace with verified mapping output or prototype media."/><div><p className="label">Current development stage / Under development</p><h2 className="h2 mt-4">Autonomous LiDAR Mapping Drone</h2><p className="body-copy mt-6">Objective: explore an aerial robotic platform for indoor spatial data collection using LiDAR sensing, onboard compute, and integrated flight hardware.</p><table className="tech-table mt-8"><tbody><tr><th>Status</th><td>Under development</td></tr><tr><th>Domains</th><td>Mechanical systems, embedded electronics, robotics and autonomy, onboard computing, simulation and testing, system integration.</td></tr><tr><th>Milestones</th><td>Airframe architecture; embedded electronics integration; ROS 2 LiDAR data pipeline; indoor mapping proof-of-concept.</td></tr><tr><th>High-level outcomes</th><td>Validated prototype architecture, synchronized sensor data, documented test decisions, and mapped development constraints.</td></tr></tbody></table><Link href="/projects/autonomous-lidar-mapping-drone" className="button-primary mt-8">View project</Link></div></article></section>}
+import { redirect } from "next/navigation"
+
+export default function ProjectsPage() {
+  redirect("/drones")
+}
