@@ -45,8 +45,11 @@ export function Navbar() {
       <button className="menu-button" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)}>{open ? "Close" : "Menu"}</button>
     </div>
     {open && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><div className="site-shell">
+      <Link href="/" onClick={() => setOpen(false)}>Company<span className="css-arrow" /></Link>
+      <Link href="/#ventures" onClick={() => setOpen(false)}>Ventures<span className="css-arrow" /></Link>
       <Link href="/gifts" onClick={() => setOpen(false)}>Gift shop<span className="css-arrow" /></Link>
       <p className="mobile-nav-label">Cards</p>
+      <Link className="mobile-card-link" href="/gifts/cards" onClick={() => setOpen(false)}>Browse all cards</Link>
       {cardLinks.map(([label, id]) => <Link className="mobile-card-link" key={id} href={`/gifts/cards#${id}`} onClick={() => setOpen(false)}>{label}</Link>)}
       <Link href="/gifts/3d-printed" onClick={() => setOpen(false)}>3D-printed gifts<span className="css-arrow" /></Link>
       <Link href="/gifts/cards#bulk-orders" onClick={() => setOpen(false)}>Bulk orders<span className="css-arrow" /></Link>
