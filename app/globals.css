@@ -40,3 +40,41 @@
 .shop-choices{padding-top:75px}.gift-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.gift-choice-card{display:grid;grid-template-rows:250px 1fr;overflow:hidden;background:white;border:1px solid #e5e0da;border-radius:20px;box-shadow:0 12px 35px rgba(53,43,39,.06);transition:transform .25s,box-shadow .25s}.gift-choice-card:hover{transform:translateY(-5px);box-shadow:0 22px 50px rgba(53,43,39,.12)}.gift-choice-card .image-slot{height:100%;border:0}.choice-cards .image-slot{background:linear-gradient(135deg,#f2c7b0,#e7d2ea)}.choice-printed .image-slot{background:linear-gradient(135deg,#bdd9d2,#c4d3eb)}.gift-choice-card>div:last-child{padding:25px 28px 29px}.gift-choice-card h3{font-size:clamp(27px,3vw,37px);letter-spacing:-.055em;margin:8px 0}.gift-choice-card>div:last-child>p:not(.product-kind){font-size:14px;line-height:1.6;color:#686663;max-width:430px;margin:0 0 20px}.choice-link{display:inline-flex;align-items:center;gap:10px;color:#744356;font-size:13px;font-weight:700}.shop-custom{background:#efe3ec}.shop-custom .custom-gift-grid>.image-slot{background:linear-gradient(140deg,#f4c2bd,#c9c6e7)}.shop-custom .custom-gift-grid .round-button{background:#704469;border-color:#704469}
 @media(max-width:850px){.gift-choice-grid{grid-template-columns:1fr}.gift-choice-card{grid-template-rows:230px 1fr}}
 @media(max-width:540px){.shop-home-hero{padding-block:75px 60px}.shop-home-hero h1{font-size:62px}.gift-choice-card{grid-template-rows:195px 1fr}.gift-choice-card>div:last-child{padding:21px}}
+
+
+/* Occasion-specific card galleries */
+.card-category-hero{padding-block:88px 70px}
+.card-category-hero .eyebrow a{text-decoration:underline;text-underline-offset:3px}
+.card-category-hero h1{max-width:1000px;margin-inline:auto}
+.card-category-note{margin:18px auto 0;color:#7a5a61;font:italic 17px Georgia,serif}
+.card-design-section{padding-top:72px}
+.card-design-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.card-design-card{overflow:hidden;border:1px solid #e5e0da;border-radius:16px;background:#fff;transition:transform .22s,box-shadow .22s}
+.card-design-card:hover{transform:translateY(-4px);box-shadow:0 18px 38px rgba(73,51,45,.12)}
+.card-design-art{aspect-ratio:4/5;position:relative;display:grid;place-items:center;padding:18px;overflow:hidden}
+.card-design-tone-1{background:linear-gradient(145deg,#f6d6c8,#f4e9df)}
+.card-design-tone-2{background:linear-gradient(145deg,#e4d8ed,#f5e5e5)}
+.card-design-tone-3{background:linear-gradient(145deg,#c9e1d9,#f0ebd6)}
+.card-design-tone-4{background:linear-gradient(145deg,#d3e1f0,#f6e1d2)}
+.card-design-tone-5{background:linear-gradient(145deg,#ead1d8,#ece5d7)}
+.card-design-tone-6{background:linear-gradient(145deg,#d8dfc8,#e4d9f1)}
+.card-design-badge{position:absolute;top:12px;left:12px;padding:6px 9px;border-radius:99px;background:rgba(255,255,255,.78);font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.card-design-placeholder{width:78%;height:80%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;border:1px solid rgba(70,57,57,.14);border-radius:5px;background:rgba(255,253,249,.88);box-shadow:0 12px 25px rgba(74,54,46,.12);text-align:center;transform:rotate(-2deg)}
+.card-design-card:nth-child(2n) .card-design-placeholder{transform:rotate(2deg)}
+.card-design-icon{font-size:22px;color:#8c5966}
+.card-design-placeholder p{margin:8px 0!important;color:#654c53!important;font:italic clamp(15px,1.6vw,23px) Georgia,serif!important}
+.card-design-placeholder small{font-size:8px;color:#79716d;letter-spacing:.06em}
+.card-design-copy{padding:15px 16px 17px}
+.card-design-copy h3{margin:0 0 6px;font-size:15px;letter-spacing:-.025em}
+.card-design-copy p{margin:0 0 12px;color:#77706e;font-size:12px;line-height:1.5}
+.card-design-copy a{display:inline-flex;align-items:center;gap:8px;color:#744356;font-size:11px;font-weight:700}
+.card-category-skeleton .skeleton-hero{background:linear-gradient(135deg,#f7e7dc,#f3e8f0,#dfeaf0)}
+.card-category-skeleton .card-design-grid{padding-bottom:100px}
+.card-category-skeleton .card-design-card .skeleton-image{height:auto;aspect-ratio:4/5;background:#eadad9}
+.card-category-skeleton .card-design-card:nth-child(3n+2) .skeleton-image{background:#d9d0e7}
+.card-category-skeleton .card-design-card:nth-child(3n) .skeleton-image{background:#cfe2de}
+.card-category-back{padding-block:0 55px}
+.card-category-back a{font-size:13px;font-weight:650;color:#744356}
+@media(max-width:1000px){.card-design-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.card-design-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:460px){.card-design-grid{gap:11px}.card-design-art{padding:11px}.card-design-copy{padding:12px}.card-design-copy h3{font-size:13px}}
