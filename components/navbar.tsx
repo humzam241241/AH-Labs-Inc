@@ -29,6 +29,7 @@ export function Navbar() {
             <Link href="/contact">Contact us</Link>
             <Link href="/payments">Payment questions</Link>
             <Link href="/faq">Frequently asked questions</Link>
+            <Link href="/gifts/delivery">Delivery request</Link>
             <Link href="/location">Location</Link>
           </div>
         </div>
@@ -48,6 +49,7 @@ export function Navbar() {
       <Link href="/contact" onClick={() => setOpen(false)}>Contact us</Link>
       <Link href="/payments" onClick={() => setOpen(false)}>Payment questions</Link>
       <Link href="/faq" onClick={() => setOpen(false)}>Frequently asked questions</Link>
+      <Link href="/gifts/delivery" onClick={() => setOpen(false)}>Delivery request</Link>
       <Link href="/location" onClick={() => setOpen(false)}>Location</Link>
     </div></nav>}
   </header>
