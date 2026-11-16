@@ -28,12 +28,11 @@ function availability_(input) {
   const travelMinutes = travelMinutes_(input.address);
   const day = parseLocalDate_(input.date);
   validateBookingDay_(day);
-  const calendar = CalendarApp.getDefaultCalendar();
   const slots = [];
   for (let minute = DELIVERY.OPEN_HOUR * 60; minute + DELIVERY.SLOT_MINUTES <= DELIVERY.CLOSE_HOUR * 60; minute += DELIVERY.SLOT_MINUTES) {
     const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), Math.floor(minute / 60), minute % 60, 0, 0);
     const end = new Date(start.getTime() + DELIVERY.SLOT_MINUTES * 60000);
-    if (isBookable_(calendar, start, end, travelMinutes)) slots.push(slot_(start, end));
+    if (isBookable_(start, end, travelMinutes)) slots.push(slot_(start, end));
   }
   return { ok: true, date: input.date, address: input.address, origin: DELIVERY.ORIGIN, travelMinutes: travelMinutes, slots: slots };
 }
@@ -52,13 +51,16 @@ function book_(input) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(15000)) throw new Error("Another booking is being processed. Try again.");
   try {
-    const calendar = CalendarApp.getDefaultCalendar();
-    const existing = calendar.getEventsForDay(windowStart);
-    const duplicate = existing.find(function(event) { return event.getDescription().indexOf("Request ID: " + input.requestId) !== -1; });
-    if (duplicate) return bookingResponse_(duplicate, windowStart, windowEnd, Number(duplicate.getTag("travelMinutes") || 0));
+    const dayStart = new Date(windowStart.getFullYear(), windowStart.getMonth(), windowStart.getDate(), 0, 0, 0, 0);
+    const dayEnd = new Date(dayStart.getTime() + 86400000);
+    const existing = calendarEvents_(dayStart, dayEnd);
+    const duplicate = existing.find(function(event) {
+      return event.extendedProperties && event.extendedProperties.private && event.extendedProperties.private.requestId === input.requestId;
+    });
+    if (duplicate) return bookingResponse_(duplicate, windowStart, windowEnd, Number(duplicate.extendedProperties.private.travelMinutes || 0));
 
     const travelMinutes = travelMinutes_(input.address);
-    if (!isBookable_(calendar, windowStart, windowEnd, travelMinutes)) throw new Error("That time is no longer available. Choose another slot.");
+    if (!isBookable_(windowStart, windowEnd, travelMinutes)) throw new Error("That time is no longer available. Choose another slot.");
     const blockStart = new Date(windowStart.getTime() - travelMinutes * 60000);
     const blockEnd = new Date(windowEnd.getTime() + travelMinutes * 60000);
     const bookingId = "AHG-" + Utilities.getUuid().slice(0, 8).toUpperCase();
@@ -76,25 +78,80 @@ function book_(input) {
       "Notes: " + (input.notes || "None"),
       "Delivery address: " + input.address,
     ].join("\n");
-    const event = calendar.createEvent("AH Gifts delivery — " + input.customerName, blockStart, blockEnd, { description: description, location: input.address });
-    event.setVisibility(CalendarApp.Visibility.PRIVATE);
-    event.setTag("bookingId", bookingId);
-    event.setTag("requestId", input.requestId);
-    event.setTag("travelMinutes", String(travelMinutes));
+    const event = createCalendarEvent_({
+      summary: "AH Gifts delivery — " + input.customerName,
+      description: description,
+      location: input.address,
+      visibility: "private",
+      start: { dateTime: blockStart.toISOString(), timeZone: DELIVERY.TIME_ZONE },
+      end: { dateTime: blockEnd.toISOString(), timeZone: DELIVERY.TIME_ZONE },
+      extendedProperties: {
+        private: {
+          bookingId: bookingId,
+          requestId: input.requestId,
+          travelMinutes: String(travelMinutes),
+        },
+      },
+    });
     return bookingResponse_(event, windowStart, windowEnd, travelMinutes);
   } finally {
     lock.releaseLock();
   }
 }
 
-function isBookable_(calendar, windowStart, windowEnd, travelMinutes) {
+function isBookable_(windowStart, windowEnd, travelMinutes) {
   const nowWithNotice = new Date(Date.now() + DELIVERY.MIN_NOTICE_HOURS * 3600000);
   if (windowStart < nowWithNotice) return false;
   const blockStart = new Date(windowStart.getTime() - travelMinutes * 60000);
   const blockEnd = new Date(windowEnd.getTime() + travelMinutes * 60000);
-  return !calendar.getEvents(blockStart, blockEnd).some(function(event) {
-    return event.getStartTime() < blockEnd && event.getEndTime() > blockStart;
+  return !calendarEvents_(blockStart, blockEnd).some(function(event) {
+    return eventStart_(event) < blockEnd && eventEnd_(event) > blockStart;
   });
+}
+
+function calendarEvents_(start, end) {
+  const result = calendarRequest_("get", "events", {
+    timeMin: start.toISOString(),
+    timeMax: end.toISOString(),
+    singleEvents: "true",
+    maxResults: "2500",
+  });
+  return (result.items || []).filter(function(event) { return event.status !== "cancelled"; });
+}
+
+function createCalendarEvent_(event) {
+  return calendarRequest_("post", "events", {}, event);
+}
+
+function calendarRequest_(method, path, params, body) {
+  const query = Object.keys(params || {}).map(function(key) {
+    return encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+  }).join("&");
+  const url = "https://www.googleapis.com/calendar/v3/calendars/primary/" + path + (query ? "?" + query : "");
+  const options = {
+    method: method,
+    headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true,
+    contentType: "application/json",
+  };
+  if (body) options.payload = JSON.stringify(body);
+  const response = UrlFetchApp.fetch(url, options);
+  const status = response.getResponseCode();
+  const text = response.getContentText();
+  const payload = text ? JSON.parse(text) : {};
+  if (status < 200 || status >= 300) {
+    const message = payload.error && payload.error.message ? payload.error.message : "Google Calendar request failed.";
+    throw new Error(message);
+  }
+  return payload;
+}
+
+function eventStart_(event) {
+  return new Date(event.start.dateTime || event.start.date);
+}
+
+function eventEnd_(event) {
+  return new Date(event.end.dateTime || event.end.date);
 }
 
 function travelMinutes_(address) {
@@ -132,12 +189,13 @@ function slot_(start, end) {
 }
 
 function bookingResponse_(event, windowStart, windowEnd, travelMinutes) {
+  const tags = event.extendedProperties && event.extendedProperties.private ? event.extendedProperties.private : {};
   return {
     ok: true,
-    bookingId: event.getTag("bookingId"),
+    bookingId: tags.bookingId,
     customerWindow: format_(windowStart) + "–" + Utilities.formatDate(windowEnd, DELIVERY.TIME_ZONE, "h:mm a"),
-    departureTime: format_(event.getStartTime()),
-    estimatedReturnTime: format_(event.getEndTime()),
+    departureTime: format_(eventStart_(event)),
+    estimatedReturnTime: format_(eventEnd_(event)),
     travelMinutes: travelMinutes,
   };
 }
