@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
+import { cardImage } from "@/lib/card-catalog"
 
 export const metadata: Metadata = {
   title: "Gift Shop",
@@ -23,7 +25,7 @@ export default function GiftsPage() {
       <div className="section-heading"><div><p className="eyebrow">Make it personal</p><h2>What are you<br />looking for?</h2></div><p>Thoughtful things, made with care.</p></div>
       <div className="gift-choice-grid">
         <Link href="/gifts/cards" className="gift-choice-card choice-cards">
-          <ImageSlot label="Greeting cards" />
+          <div className="shop-card-art"><Image src={cardImage("birthday", 1)} alt="Watercolor wildflower greeting card artwork" fill sizes="(max-width: 850px) 100vw, 50vw" style={{ objectFit: "contain" }} /></div>
           <div><p className="product-kind">Cards for every occasion</p><h3>Gift cards</h3><p>Birthday, wedding, graduation, holidays, and all the little moments between.</p><span className="choice-link">Browse greeting cards <i className="css-arrow" aria-hidden="true" /></span></div>
         </Link>
         <Link href="/gifts/3d-printed" className="gift-choice-card choice-printed">
