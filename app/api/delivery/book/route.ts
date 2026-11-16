@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { callDeliveryCalendar, cleanText, validIsoDateTime } from "@/lib/delivery-booking"
+import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -25,10 +26,31 @@ export async function POST(request: Request) {
     if (!requestId) return NextResponse.json({ message: "Refresh the page and try again." }, { status: 400 })
 
     const result = await callDeliveryCalendar("book", { customerName, phone, email, address, order, notes, slotStart, requestId })
+    await saveCustomerOrder({ customerName, phone, email, address, order, notes, slotStart, result })
     return NextResponse.json(result)
   } catch (error) {
     const message = error instanceof Error ? error.message : "The delivery could not be booked."
     const conflict = /no longer available|already booked|conflict/i.test(message)
     return NextResponse.json({ message }, { status: conflict ? 409 : message.includes("not configured") ? 503 : 502 })
   }
+}
+
+async function saveCustomerOrder(input: { customerName: string; phone: string; email: string; address: string; order: string; notes: string; slotStart: string; result: Record<string, unknown> }) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) return
+  const authClient = createSupabaseServerClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) return
+  const admin = createSupabaseAdminClient()
+  const orderNumber = `AH-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  const { error } = await admin.from("orders").insert({
+    customer_id: user.id,
+    order_number: orderNumber,
+    status: "confirmed",
+    items: input.order ? [{ name: input.order }] : [],
+    delivery_address: input.address,
+    delivery_window_start: input.slotStart,
+    booking_reference: input.result.bookingId ?? null,
+    notes: input.notes || null,
+  })
+  if (error) console.error("Could not save customer order", error.message)
 }
