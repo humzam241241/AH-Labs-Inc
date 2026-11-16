@@ -13,7 +13,7 @@ export default function Home() {
         <p className="eyebrow">Independent ideas. One vision.</p>
         <h1>Ideas,<br />made real.</h1>
         <p className="hero-copy">A home for thoughtful products, new technologies, and the businesses we&apos;re building next.</p>
-        <a className="round-button" href="#ventures">Explore our ventures <span aria-hidden="true">↗</span></a>
+        <a className="round-button" href="#ventures">Explore our ventures <span className="css-arrow" aria-hidden="true" /></a>
       </section>
 
       <section className="venture-section site-shell" id="ventures">
@@ -26,14 +26,14 @@ export default function Home() {
             <span className="status-pill">Now exploring</span>
             <h3>AH Gifts.</h3>
             <p>Cards, objects, and personalized pieces made to mean more.</p>
-            <Link href="/gifts" className="venture-link">Discover AH Gifts <span aria-hidden="true">↗</span></Link>
+            <Link href="/gifts" className="venture-link">Discover AH Gifts <span className="css-arrow" aria-hidden="true" /></Link>
             <div className="gift-art" aria-hidden="true"><div className="paper-card">for you.</div><div className="gift-token">AH</div></div>
           </article>
           <article className="venture-card drone-card">
             <span className="status-pill">In development</span>
             <h3>AH Drones.</h3>
             <p>Robotics, autonomous systems, and the future of aerial technology.</p>
-            <Link href="/projects/autonomous-lidar-mapping-drone" className="venture-link">Explore the project <span aria-hidden="true">↗</span></Link>
+            <Link href="/projects/autonomous-lidar-mapping-drone" className="venture-link">Explore the project <span className="css-arrow" aria-hidden="true" /></Link>
             <div className="drone-art" aria-hidden="true"><i className="arm one" /><i className="arm two" /><i className="drone-core" /><i className="rotor r1" /><i className="rotor r2" /><i className="rotor r3" /><i className="rotor r4" /></div>
           </article>
         </div>
@@ -52,7 +52,7 @@ export default function Home() {
         <div className="principle-grid">{principles.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
       </section>
 
-      <section className="contact-band"><div className="site-shell"><div><p className="eyebrow">Start a conversation</p><h2>Have an idea worth building?</h2></div><Link href="/contact" className="round-button light">Contact AH Labs <span aria-hidden="true">↗</span></Link></div></section>
+      <section className="contact-band"><div className="site-shell"><div><p className="eyebrow">Start a conversation</p><h2>Have an idea worth building?</h2></div><Link href="/contact" className="round-button light">Contact AH Labs <span className="css-arrow" aria-hidden="true" /></Link></div></section>
     </>
   )
 }
