@@ -45,7 +45,7 @@ export default function CardDesignPage({ params }: Props) {
         <p className="eyebrow">{category.name} · Design {String(number).padStart(2, "0")}</p>
         <h1>{title}</h1>
         <p>This artwork can be the starting point for a card with your own wording and details.</p>
-        <div className="card-reference"><span>Design reference</span><strong>{code}</strong></div>
+        <div className="card-reference"><span>Design reference</span><strong>{code}</strong><small>{category.name}</small></div>
         <ProductOrderForm productName={title} reference={code} categoryName={category.name} />
         <Link className="card-back-link" href={`/gifts/cards/${category.slug}`}>← All {category.name.toLowerCase()}</Link>
         <p className="card-detail-note">Artwork preview only. Final layout, price, and print details are confirmed before production.</p>
