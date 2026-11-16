@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { ProductOrderForm } from "@/components/product-order-form"
 import { cardCategories, cardCode, cardImage, findCardCategory } from "@/lib/card-catalog"
 
 type Props = { params: { category: string; design: string } }
@@ -45,9 +46,9 @@ export default function CardDesignPage({ params }: Props) {
         <h1>{title}</h1>
         <p>This artwork can be the starting point for a card with your own wording and details.</p>
         <div className="card-reference"><span>Design reference</span><strong>{code}</strong></div>
-        <Link className="round-button" href="/contact">Ask about this design <i className="css-arrow" aria-hidden="true" /></Link>
+        <ProductOrderForm productName={title} reference={code} categoryName={category.name} />
         <Link className="card-back-link" href={`/gifts/cards/${category.slug}`}>← All {category.name.toLowerCase()}</Link>
-        <p className="card-detail-note">Artwork preview only. Final layout and print details are confirmed when you inquire.</p>
+        <p className="card-detail-note">Artwork preview only. Final layout, price, and print details are confirmed before production.</p>
       </div>
     </div>
   </main>
