@@ -33,7 +33,7 @@ export default function Home() {
             <span className="status-pill">In development</span>
             <h3>AH Drones.</h3>
             <p>Robotics, autonomous systems, and the future of aerial technology.</p>
-            <Link href="/projects/autonomous-lidar-mapping-drone" className="venture-link">Explore the project <span className="css-arrow" aria-hidden="true" /></Link>
+            <Link href="/drones" className="venture-link">Visit AH Drones <span className="css-arrow" aria-hidden="true" /></Link>
             <div className="drone-art" aria-hidden="true"><i className="arm one" /><i className="arm two" /><i className="drone-core" /><i className="rotor r1" /><i className="rotor r2" /><i className="rotor r3" /><i className="rotor r4" /></div>
           </article>
         </div>
