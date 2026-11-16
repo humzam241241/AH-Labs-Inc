@@ -1,25 +1,58 @@
 import Link from "next/link"
-import { MediaPlaceholder, SectionIntro, TextLink } from "@/components/design-system"
 
-const focus = ["Mechanical systems", "Embedded electronics", "Robotics and autonomy", "Simulation and testing", "Onboard computing", "System integration"]
-const process = ["Define", "Design", "Prototype", "Test", "Iterate"]
-const principles = ["Build before claiming", "Validate through testing", "Integrate across disciplines", "Document decisions", "Iterate from evidence"]
+const principles = [
+  ["01", "Curious by default", "We explore useful ideas across products, robotics, and emerging technology."],
+  ["02", "Built to be real", "We move from concept to prototype, test what works, and improve from evidence."],
+  ["03", "One company, many paths", "Each venture has its own focus while sharing the same standard for thoughtful execution."],
+]
 
 export default function Home() {
-  return <>
-    <section className="site-shell grid min-h-[calc(100vh-4rem)] gap-10 py-14 lg:grid-cols-[1fr_540px] lg:items-end lg:py-20">
-      <div><p className="kicker">AH Labs Inc.</p><p className="mt-4 font-mono text-sm uppercase tracking-[0.18em] text-[var(--muted)]">Engineering Studio</p><h1 className="h1 mt-10 max-w-5xl">Robotic systems, embedded electronics, and autonomous platforms.</h1><p className="lede mt-8 max-w-3xl">AH Labs is an early-stage engineering studio developing applied engineering prototypes across mechanical, electrical, and software disciplines.</p><div className="mt-10 flex flex-col gap-3 sm:flex-row"><Link href="/projects/autonomous-lidar-mapping-drone" className="button-primary">Flagship project</Link><Link href="/contact" className="button-secondary">Contact</Link></div></div>
-      <div className="lg:pb-2"><MediaPlaceholder label="CAD render placeholder" note="Reserved for verified prototype media, CAD render, or engineering diagram." /><div className="mt-4 grid grid-cols-2 border-y border-[var(--line)] text-sm"><div className="py-4 pr-4"><p className="label">Current venture</p><p className="mt-2">Autonomous LiDAR Mapping Drone</p></div><div className="border-l border-[var(--line)] py-4 pl-4"><p className="label">Status</p><p className="mt-2">Under development</p></div></div></div>
-    </section>
+  return (
+    <>
+      <section className="home-hero site-shell">
+        <p className="eyebrow">Independent ideas. One vision.</p>
+        <h1>Ideas,<br />made real.</h1>
+        <p className="hero-copy">A home for thoughtful products, new technologies, and the businesses we&apos;re building next.</p>
+        <a className="round-button" href="#ventures">Explore our ventures <span aria-hidden="true">↗</span></a>
+      </section>
 
-    <section className="section"><div className="site-shell"><SectionIntro index="01" eyebrow="Studio focus" title="Development work spans the interfaces between structure, electronics, sensing, compute, and test."><p>The studio is intentionally multidisciplinary. Projects are treated as integrated systems rather than isolated components.</p></SectionIntro><div className="mt-12 grid border-t border-[var(--line)] md:grid-cols-2 lg:grid-cols-3">{focus.map((item, i)=><div key={item} className="min-h-32 border-b border-[var(--line)] p-6 md:border-r"><p className="font-mono text-xs text-[var(--accent)]">{String(i+1).padStart(2,"0")}</p><h3 className="mt-8 text-2xl tracking-[-0.03em]">{item}</h3></div>)}</div></div></section>
+      <section className="venture-section site-shell" id="ventures">
+        <div className="section-heading">
+          <div><p className="eyebrow">Our ventures</p><h2>Different ideas.<br />Shared ambition.</h2></div>
+          <p>Discover what we&apos;re working on.</p>
+        </div>
+        <div className="venture-grid">
+          <article className="venture-card gift-card">
+            <span className="status-pill">Now exploring</span>
+            <h3>AH Gifts.</h3>
+            <p>Cards, objects, and personalized pieces made to mean more.</p>
+            <Link href="/gifts" className="venture-link">Discover AH Gifts <span aria-hidden="true">↗</span></Link>
+            <div className="gift-art" aria-hidden="true"><div className="paper-card">for you.</div><div className="gift-token">AH</div></div>
+          </article>
+          <article className="venture-card drone-card">
+            <span className="status-pill">In development</span>
+            <h3>AH Drones.</h3>
+            <p>Robotics, autonomous systems, and the future of aerial technology.</p>
+            <Link href="/projects/autonomous-lidar-mapping-drone" className="venture-link">Explore the project <span aria-hidden="true">↗</span></Link>
+            <div className="drone-art" aria-hidden="true"><i className="arm one" /><i className="arm two" /><i className="drone-core" /><i className="rotor r1" /><i className="rotor r2" /><i className="rotor r3" /><i className="rotor r4" /></div>
+          </article>
+        </div>
+      </section>
 
-    <section className="section"><div className="site-shell grid gap-10 lg:grid-cols-[1fr_480px]"><div><p className="kicker">02 / Flagship venture</p><h2 className="h2 mt-4">Autonomous LiDAR Mapping Drone</h2><p className="lede mt-6">A prototype platform exploring indoor spatial data collection using autonomous flight hardware, onboard compute, ROS 2, and LiDAR sensing.</p><div className="mt-8"><div className="meta-row"><span className="label">Status</span><span>Under development</span></div><div className="meta-row"><span className="label">Problem</span><span>How aerial robotic platforms can collect useful spatial data in constrained built environments.</span></div><div className="meta-row"><span className="label">Disciplines</span><span>Mechanical design, embedded electronics, robotics software, sensing, onboard computing, test.</span></div><div className="meta-row"><span className="label">Milestones</span><span>Airframe architecture, electronics integration, LiDAR data pipeline, indoor mapping proof-of-concept.</span></div></div><Link href="/projects/autonomous-lidar-mapping-drone" className="button-secondary mt-8">Open project page</Link></div><MediaPlaceholder label="Prototype photograph placeholder" note="Use only real drone, PCB, CAD, mapping, or test imagery when available." /></div></section>
+      <section className="manifesto" id="about">
+        <div className="site-shell">
+          <p className="eyebrow">AH Labs Inc.</p>
+          <h2>Built with curiosity.<br />Designed for what comes next.</h2>
+          <p>One Canadian company bringing distinct ventures together through purposeful design, practical innovation, and a bias toward making.</p>
+        </div>
+      </section>
 
-    <section className="section"><div className="site-shell"><SectionIntro index="03" eyebrow="Engineering process" title="Work progresses through evidence, not presentation polish." /><ol className="mt-12 grid border-y border-[var(--line)] lg:grid-cols-5">{process.map((step,i)=><li key={step} className="border-b border-[var(--line)] p-6 lg:border-b-0 lg:border-r"><p className="font-mono text-xs text-[var(--accent)]">{String(i+1).padStart(2,"0")}</p><h3 className="h3 mt-10">{step}</h3></li>)}</ol></div></section>
+      <section className="principles site-shell">
+        <div className="section-heading compact"><div><p className="eyebrow">How we work</p><h2>From an idea<br />to something useful.</h2></div></div>
+        <div className="principle-grid">{principles.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
+      </section>
 
-    <section className="section"><div className="site-shell"><SectionIntro index="04" eyebrow="Studio principles" title="Ground rules for early-stage engineering work." /><div className="mt-12 max-w-4xl divide-y divide-[var(--line)]">{principles.map(p=><p key={p} className="py-5 text-2xl tracking-[-0.03em]">{p}</p>)}</div></div></section>
-
-    <section className="section"><div className="site-shell grid gap-8 md:grid-cols-[1fr_360px]"><h2 className="h2">Discuss engineering collaboration, research collaboration, internship interest, or a general inquiry.</h2><p className="body-copy">Use the <TextLink href="/contact">contact page</TextLink> to route the inquiry. AH Labs is early-stage; project scope and availability should be confirmed directly.</p></div></section>
-  </>
+      <section className="contact-band"><div className="site-shell"><div><p className="eyebrow">Start a conversation</p><h2>Have an idea worth building?</h2></div><Link href="/contact" className="round-button light">Contact AH Labs <span aria-hidden="true">↗</span></Link></div></section>
+    </>
+  )
 }
