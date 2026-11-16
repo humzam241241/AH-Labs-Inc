@@ -37,15 +37,35 @@ function cleanDraft(input: unknown) {
   }
 }
 
+function cleanShipping(input: unknown) {
+  if (!input || typeof input !== "object") return null
+  const shipping = input as Record<string, unknown>
+  const result = {
+    name: text(shipping.name, 100),
+    address: text(shipping.address, 240),
+    city: text(shipping.city, 100),
+    province: text(shipping.province, 40),
+    postalCode: text(shipping.postalCode, 20),
+    phone: text(shipping.phone, 40),
+  }
+  return result.name && result.address && result.city && result.province && result.postalCode ? result : null
+}
+
 export async function POST(request: Request) {
   try {
     const authClient = createSupabaseServerClient()
     const { data: { user } } = await authClient.auth.getUser()
     if (!user) return NextResponse.json({ message: "Sign in before placing an order." }, { status: 401 })
 
-    const body = await request.json() as { draft?: unknown }
+    const body = await request.json() as { draft?: unknown; fulfillmentMethod?: unknown; shipping?: unknown }
     const items = cleanDraft(body.draft)
     if (!items) return NextResponse.json({ message: "Your order details are incomplete. Please return to the product page." }, { status: 400 })
+
+    const fulfillmentMethod = body.fulfillmentMethod === "shipping" ? "shipping" : ""
+    const shipping = cleanShipping(body.shipping)
+    if (fulfillmentMethod !== "shipping" || !shipping) {
+      return NextResponse.json({ message: "Complete the shipping details before placing this order." }, { status: 400 })
+    }
 
     const orderNumber = `AH-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`
     const admin = createSupabaseAdminClient()
@@ -54,7 +74,12 @@ export async function POST(request: Request) {
       order_number: orderNumber,
       status: "pending",
       items: [items],
-      notes: "Awaiting Interac e-Transfer confirmation.",
+      notes: [
+        "Awaiting Interac e-Transfer confirmation.",
+        "Fulfillment: shipping.",
+        `Ship to: ${shipping.name}, ${shipping.address}, ${shipping.city}, ${shipping.province}, ${shipping.postalCode}.`,
+        shipping.phone ? `Phone: ${shipping.phone}.` : "",
+      ].filter(Boolean).join(" "),
     })
 
     if (error) {
