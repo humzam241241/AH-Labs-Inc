@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { cardCategories } from "@/lib/card-catalog"
 
 const cardLinks = cardCategories.map(({ name, slug }) => [name, slug] as const)
@@ -10,6 +10,11 @@ const cardLinks = cardCategories.map(({ name, slug }) => [name, slug] as const)
 export function Navbar() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
   return <header className="site-header">
     <div className="site-shell nav-shell">
       <Link href="/" className="wordmark" onClick={() => setOpen(false)}>AH <span>Gifts.</span></Link>
@@ -33,22 +38,30 @@ export function Navbar() {
           </div>
         </div>
       </nav>
-      <button className="menu-button" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)}>{open ? "Close" : "Menu"}</button>
+      <button type="button" className="menu-button" aria-expanded={open} aria-controls="mobile-nav" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpen((value) => !value)}>{open ? "Close" : "Menu"}</button>
     </div>
-    {open && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><div className="site-shell">
-      <Link href="/gifts" onClick={() => setOpen(false)}>AH Gifts<span className="css-arrow" /></Link>
-      <p className="mobile-nav-label">Cards</p>
-      <Link className="mobile-card-link" href="/gifts/cards" onClick={() => setOpen(false)}>Browse all cards</Link>
-      {cardLinks.map(([label, id]) => <Link className="mobile-card-link" key={id} href={`/gifts/cards/${id}`} onClick={() => setOpen(false)}>{label}</Link>)}
-      <Link href="/gifts/3d-printed" onClick={() => setOpen(false)}>3D-printed gifts<span className="css-arrow" /></Link>
-      <Link href="/gifts/bulk-orders" onClick={() => setOpen(false)}>Bulk orders<span className="css-arrow" /></Link>
-      <Link href="/account" onClick={() => setOpen(false)}>My account<span className="css-arrow" /></Link>
-      <p className="mobile-nav-label">Help</p>
-      <Link href="/contact" onClick={() => setOpen(false)}>Contact us</Link>
-      <Link href="/payments" onClick={() => setOpen(false)}>Payment questions</Link>
-      <Link href="/faq" onClick={() => setOpen(false)}>Frequently asked questions</Link>
-      <Link href="/gifts/delivery" onClick={() => setOpen(false)}>Delivery request</Link>
-      <Link href="/location" onClick={() => setOpen(false)}>Location</Link>
-    </div></nav>}
+    {open && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><div className="mobile-nav-scroll"><div className="site-shell">
+      <Link href="/gifts" onClick={() => setOpen(false)}>AH Gifts<span className="css-arrow" aria-hidden="true" /></Link>
+      <details className="mobile-nav-group" open={pathname.startsWith("/gifts/cards")}>
+        <summary>Cards<span className="mobile-nav-chevron" aria-hidden="true" /></summary>
+        <div className="mobile-nav-sublist">
+          <Link className="mobile-card-link" href="/gifts/cards" onClick={() => setOpen(false)}>Browse all cards</Link>
+          {cardLinks.map(([label, id]) => <Link className="mobile-card-link" key={id} href={`/gifts/cards/${id}`} onClick={() => setOpen(false)}>{label}</Link>)}
+        </div>
+      </details>
+      <Link href="/gifts/3d-printed" onClick={() => setOpen(false)}>3D-printed gifts<span className="css-arrow" aria-hidden="true" /></Link>
+      <Link href="/gifts/bulk-orders" onClick={() => setOpen(false)}>Bulk orders<span className="css-arrow" aria-hidden="true" /></Link>
+      <Link href="/account" onClick={() => setOpen(false)}>My account<span className="css-arrow" aria-hidden="true" /></Link>
+      <details className="mobile-nav-group" open={pathname.startsWith("/contact") || pathname.startsWith("/payments") || pathname.startsWith("/faq") || pathname.startsWith("/gifts/delivery") || pathname.startsWith("/location")}>
+        <summary>Help<span className="mobile-nav-chevron" aria-hidden="true" /></summary>
+        <div className="mobile-nav-sublist">
+          <Link href="/contact" onClick={() => setOpen(false)}>Contact us</Link>
+          <Link href="/payments" onClick={() => setOpen(false)}>Payment questions</Link>
+          <Link href="/faq" onClick={() => setOpen(false)}>Frequently asked questions</Link>
+          <Link href="/gifts/delivery" onClick={() => setOpen(false)}>Delivery request</Link>
+          <Link href="/location" onClick={() => setOpen(false)}>Location</Link>
+        </div>
+      </details>
+    </div></div></nav>}
   </header>
 }
