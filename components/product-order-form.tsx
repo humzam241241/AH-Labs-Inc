@@ -26,7 +26,7 @@ type CardDraft = {
 const PENDING_ORDER_KEY = "ah-gifts:pending-order"
 
 export function ProductOrderForm({ productName, reference, categoryName }: Props) {
-  const [dimensions, setDimensions] = useState("A2 — 4.25 × 5.5 in")
+  const [dimensions, setDimensions] = useState("Mini — 3 × 3 in square")
   const [customDimensions, setCustomDimensions] = useState("")
   const [quality, setQuality] = useState("Premium")
   const [message, setMessage] = useState("")
@@ -78,13 +78,14 @@ export function ProductOrderForm({ productName, reference, categoryName }: Props
     <fieldset>
       <legend>Card dimensions</legend>
       {[
-        "A2 — 4.25 × 5.5 in",
-        "A7 — 5 × 7 in",
-        "Square — 5 × 5 in",
+        "Mini — 3 × 3 in square",
+        "Small — A2 · 4.25 × 5.5 in",
+        "Medium — A7 · 5 × 7 in",
+        "Large — A5 · 5.8 × 8.3 in",
         "Custom dimensions",
       ].map((option) => <label className="radio-option" key={option}>
         <input type="radio" name="dimensions" value={option} checked={dimensions === option} onChange={(event) => setDimensions(event.target.value)} />
-        <span><strong>{option}</strong><small>{option === "Custom dimensions" ? "Tell us the size you need below" : "Folded card format"}</small></span>
+        <span><strong>{option}</strong><small>{option === "Custom dimensions" ? "Tell us the size you need below" : option.startsWith("Mini") ? "Keepsake square" : option.startsWith("Large") ? "Roomier folded card" : "Standard folded card"}</small></span>
       </label>)}
       <label className="form-field"><span>Custom dimensions <small>optional</small></span><input value={customDimensions} onChange={(event) => setCustomDimensions(event.target.value)} placeholder="Example: 140 × 190 mm folded" maxLength={100} /></label>
     </fieldset>

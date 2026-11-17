@@ -1,9 +1,26 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { ContactForm } from "@/components/contact-form"
 import { inquiryCategories } from "@/lib/content"
 
-export const metadata: Metadata = { title: "Contact Us", description: "Contact AH Labs Inc. about cards, bulk orders, 3D-printed gifts, custom orders, or general questions.", openGraph: { title: "Contact Us | AH Labs Inc.", description: "Contact AH Labs Inc." } }
+export const metadata: Metadata = {
+  title: "General Inquiry",
+  description: "Send AH Labs Inc. a general question about AH Gifts, custom work, orders, or delivery.",
+  openGraph: { title: "General Inquiry | AH Labs Inc.", description: "A direct line to AH Labs." },
+}
 
 export default function ContactPage() {
-  return <section className="site-shell grid gap-12 py-16 lg:grid-cols-[1fr_520px] lg:py-24"><div><p className="kicker">Contact us</p><h1 className="h1 mt-8">What can we make for you?</h1><p className="lede mt-8">Ask about a card, bulk order, 3D-printed gift, custom idea, or anything else from AH Labs.</p><div className="mt-10 divide-y divide-[var(--line)] border-y border-[var(--line)]">{inquiryCategories.map((category) => <p key={category} className="py-4 text-xl tracking-[-0.03em]">{category}</p>)}</div></div><ContactForm /></section>
+  return <section className="inquiry-page general-inquiry-page">
+    <div className="site-shell inquiry-shell">
+      <div className="inquiry-intro">
+        <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>General inquiry</span></div>
+        <p className="eyebrow">A direct line to AH Labs</p>
+        <h1>Tell us what you’re thinking.</h1>
+        <p className="inquiry-lede">Questions, ideas, order details, or something that doesn’t fit a category? Send it here and we’ll point it in the right direction.</p>
+        <div className="inquiry-prompt"><span>Good for</span><strong>Questions before you buy, custom ideas, order help, and delivery follow-up.</strong></div>
+        <div className="inquiry-links"><Link href="/gifts/cards/custom-design">Custom card design <span className="css-arrow" /></Link><Link href="/gifts/bulk-orders">Bulk orders <span className="css-arrow" /></Link><Link href="/gifts/3d-printed">3D-printed gifts <span className="css-arrow" /></Link></div>
+      </div>
+      <ContactForm />
+    </div>
+  </section>
 }

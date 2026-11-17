@@ -49,7 +49,7 @@ export default function CardGalleryPage({ params }: Props) {
     </section>
 
     <section className="card-gallery-custom" id="custom-design"><div className="site-shell card-gallery-custom-grid">
-      <div><p className="eyebrow">Custom {category.name.toLowerCase()}</p><h2>Have your own idea?</h2><p>Start with a photo, colours, a message, or a sketch. We can make a card design around your moment.</p><Link href="/contact" className="round-button">Start a custom card <i className="css-arrow" aria-hidden="true" /></Link></div>
+      <div><p className="eyebrow">Custom {category.name.toLowerCase()}</p><h2>Have your own idea?</h2><p>Start with a photo, colours, a message, or a sketch. We can make a card design around your moment.</p><Link href="/gifts/cards/custom-design" className="round-button">Start a custom card <i className="css-arrow" aria-hidden="true" /></Link></div>
       <div className="card-custom-art"><Image src={cardImage(category.slug, 10)} alt={`Another ${category.name.toLowerCase()} artwork option`} fill sizes="(max-width: 850px) 100vw, 50vw" style={{ objectFit: "cover" }} /></div>
     </div></section>
   </>

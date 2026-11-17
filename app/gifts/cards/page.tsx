@@ -30,11 +30,11 @@ export default function CardsPage() {
 
     <section className="custom-gift-section"><div className="site-shell custom-gift-grid">
       <FeatureImage src={cardImage("custom-cards", 1)} alt="Floral artwork for a custom card" />
-      <div><p className="eyebrow">Custom card design</p><h2>Make a card that sounds like you.</h2><p>Choose the occasion, write your own message, and share a photo, colours, or a reference. We can work through the design with you.</p><Link href="/contact" className="round-button">Start a custom card <span className="css-arrow" aria-hidden="true" /></Link></div>
+      <div><p className="eyebrow">Custom card design</p><h2>Make a card that sounds like you.</h2><p>Choose the occasion, write your own message, and share a photo, colours, or a reference. We can work through the design with you.</p><Link href="/gifts/cards/custom-design" className="round-button">Start a custom card <span className="css-arrow" aria-hidden="true" /></Link></div>
     </div></section>
 
     <section className="bulk-section" id="bulk-orders"><div className="site-shell bulk-grid">
-      <div><p className="eyebrow">Cards for a crowd</p><h2>Bulk card orders.</h2><p>Need matching cards for a wedding, event, business, or holiday? Tell us the quantity, occasion, and custom wording to get started.</p><Link href="/contact" className="round-button">Ask about bulk orders <span className="css-arrow" aria-hidden="true" /></Link></div>
+      <div><p className="eyebrow">Cards for a crowd</p><h2>Bulk card orders.</h2><p>Need matching cards for a wedding, event, business, or holiday? Tell us the quantity, occasion, and custom wording to get started.</p><Link href="/gifts/bulk-orders" className="round-button">Ask about bulk orders <span className="css-arrow" aria-hidden="true" /></Link></div>
       <FeatureImage src={cardImage("wedding", 9)} alt="Wedding card artwork for a group order" />
     </div></section>
   </>
