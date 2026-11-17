@@ -24,6 +24,7 @@ export function SessionGuard() {
     const supabase = createSupabaseBrowserClient()
     let timer: ReturnType<typeof setTimeout> | undefined
     let active = false
+    let initialised = false
     let redirecting = false
 
     const redirectToSignIn = async (reason: "timeout" | "new-session") => {
@@ -47,9 +48,7 @@ export function SessionGuard() {
 
     const initialise = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
-      const hadTabSession = sessionStorage.getItem(TAB_SESSION_KEY) === "1"
+      if (!session) {\n        initialised = true\n        return\n      }\n\n      const hadTabSession = sessionStorage.getItem(TAB_SESSION_KEY) === "1"
       const oauthPending = sessionStorage.getItem(OAUTH_PENDING_KEY) === "1"
 
       if (!hadTabSession && !oauthPending) {
@@ -58,12 +57,14 @@ export function SessionGuard() {
       }
 
       active = true
+      initialised = true
       sessionStorage.setItem(TAB_SESSION_KEY, "1")
       sessionStorage.removeItem(OAUTH_PENDING_KEY)
       armTimeout()
     }
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!initialised) return
       if (!session) {
         active = false
         if (timer) clearTimeout(timer)
