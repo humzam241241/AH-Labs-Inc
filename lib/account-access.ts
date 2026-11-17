@@ -1,4 +1,6 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server"
+
+const OWNER_EMAIL = "mystrey827@gmail.com"
 
 export type AccountProfile = {
   id: string
@@ -19,7 +21,33 @@ export async function currentAccount() {
     .eq("id", user.id)
     .maybeSingle()
 
-  return { user, profile: data as AccountProfile | null }
+  if (data) return { user, profile: data as AccountProfile }
+
+  // Self-heal users created before the profile trigger was installed, or when
+  // a trigger insert failed. Otherwise the account page looks pending while
+  // the master desk has no profile row to display.
+  const isOwner = user.email?.toLowerCase() === OWNER_EMAIL
+  const admin = createSupabaseAdminClient()
+  const { data: created } = await admin
+    .from("profiles")
+    .upsert({
+      id: user.id,
+      email: user.email ?? null,
+      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
+      status: isOwner ? "approved" : "pending",
+      role: isOwner ? "master" : "customer",
+      approved_at: isOwner ? new Date().toISOString() : null,
+    }, { onConflict: "id" })
+    .select("id, email, full_name, status, role")
+    .single()
+
+  if (created) {
+    await admin
+      .from("loyalty_accounts")
+      .upsert({ customer_id: user.id, points_balance: 0 }, { onConflict: "customer_id" })
+  }
+
+  return { user, profile: (created as AccountProfile | null) }
 }
 
 export async function requireApprovedCustomer() {
