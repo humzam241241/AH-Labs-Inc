@@ -24,6 +24,8 @@ export function GoogleSignIn({ next = "/account" }: { next?: string }) {
       provider: "google",
       options: {
         redirectTo: `${appOrigin()}/auth/callback?next=${encodeURIComponent(safeNext(next))}`,
+        // Do not silently reuse another Google account from this browser.
+        queryParams: { prompt: "select_account" },
       },
     })
 
