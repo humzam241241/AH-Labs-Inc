@@ -8,6 +8,19 @@ export const dynamic = "force-dynamic"
 
 const editableStatuses = new Set(["pending", "awaiting_payment"])
 
+type CustomerEditableItem = Record<string, unknown> & {
+  quantity: number
+  dimensions: string
+  customDimensions: string
+  quality: string
+  message: string
+  designOption: string
+  sizeOption: string
+  personalization: string
+  colour: string
+  details: string
+}
+
 function cleanText(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : ""
 }
@@ -34,7 +47,7 @@ function cleanCustomerItems(requested: unknown, existing: unknown) {
       personalization: cleanText(incoming.personalization, 120),
       colour: cleanText(incoming.colour, 80),
       details: cleanText(incoming.details, 1500),
-    }
+    } as CustomerEditableItem
   })
 
   const priced = items.every((item) => finiteNumber(item.unitPriceCents) !== null)
