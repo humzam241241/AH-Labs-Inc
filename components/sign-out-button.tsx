@@ -13,7 +13,7 @@ export function SignOutButton() {
 
     try {
       const browserClient = createSupabaseBrowserClient()
-      const { error: browserError } = await browserClient.auth.signOut()
+      const { error: browserError } = await browserClient.auth.signOut({ scope: "global" })
       if (browserError) throw new Error(browserError.message)
 
       // The browser client clears the active session immediately. The server
