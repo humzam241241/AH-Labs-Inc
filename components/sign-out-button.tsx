@@ -12,14 +12,23 @@ export function SignOutButton() {
     setError("")
 
     try {
-      const response = await fetch("/api/auth/signout", {
-        method: "POST",
-        credentials: "include",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      })
-      if (!response.ok) throw new Error("Sign out could not be completed.")
-      await createSupabaseBrowserClient().auth.signOut()
+      const browserClient = createSupabaseBrowserClient()
+      const { error: browserError } = await browserClient.auth.signOut()
+      if (browserError) throw new Error(browserError.message)
+
+      // The browser client clears the active session immediately. The server
+      // request also clears any SSR cookie before the redirect, but must not
+      // prevent sign-out if the network is slow.
+      try {
+        await fetch("/api/auth/signout", {
+          method: "POST",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          keepalive: true,
+        })
+      } catch {}
+
       try { sessionStorage.removeItem("ah-tab-session") } catch {}
       window.location.replace("/account?signed_out=1")
     } catch (caught) {
