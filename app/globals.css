@@ -276,3 +276,23 @@ a{color:inherit}
 .inquiry-prompt,.inquiry-steps{border-color:rgba(96,108,56,.3)}
 .inquiry-prompt span,.inquiry-steps li>span{color:var(--organic-moss)}
 @media(max-width:620px){.shop-quick-links{justify-content:flex-start;align-items:flex-start;flex-direction:column}.shop-quick-links .round-button{width:100%;justify-content:space-between}}
+
+
+/* Tactile browsing: gentle lift, floating objects, and card interiors */
+.card-design-item,.gift-choice-card,.printed-product-card,.category-card,.round-button,.choice-link{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease,border-color .35s ease}
+.card-design-item:hover,.gift-choice-card:hover,.printed-product-card:hover,.category-card:hover{transform:translateY(-7px)}
+.card-artwork-flip{perspective:1100px;overflow:visible}
+.card-artwork-flip .card-face{position:absolute;inset:0;border-radius:inherit;backface-visibility:hidden;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.75,.2,1)}
+.card-artwork-flip .card-face-front{transform:rotateY(0deg)}
+.card-artwork-flip .card-face-back{display:grid;place-content:center;justify-items:center;gap:.55rem;padding:1.5rem;background:var(--organic-oat);color:var(--organic-ink);text-align:center;transform:rotateY(180deg);box-shadow:inset 0 0 0 1px rgba(96,108,56,.24)}
+.card-artwork-flip .card-face-back span,.card-artwork-flip .card-face-back small{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--organic-moss)}
+.card-artwork-flip .card-face-back strong{max-width:9ch;font:italic 1.9rem/1.05 Georgia,"Times New Roman",serif;color:var(--organic-terracotta)}
+.card-artwork-flip:hover .card-face-front,.card-artwork-flip:focus-within .card-face-front{transform:rotateY(-180deg)}
+.card-artwork-flip:hover .card-face-back,.card-artwork-flip:focus-within .card-face-back{transform:rotateY(0deg)}
+.card-artwork-flip:focus-visible{outline:2px solid var(--organic-terracotta);outline-offset:5px}
+.card-detail-art.card-artwork-flip{min-height:0}
+.card-detail-art.card-artwork-flip .card-face-back strong{font-size:clamp(2.3rem,5vw,4rem)}
+.gift-art,.printed-custom-preview,.card-custom-art{animation:organic-float 8s ease-in-out infinite}
+@keyframes organic-float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1deg)}}
+.choice-link:hover,.text-action:hover{transform:translateX(4px)}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
