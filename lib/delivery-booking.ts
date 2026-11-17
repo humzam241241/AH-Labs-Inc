@@ -23,7 +23,7 @@ export type BookingResponse = {
   travelMinutes: number
 }
 
-export async function callDeliveryCalendar(action: "availability" | "book", payload: Record<string, unknown>) {
+export async function callDeliveryCalendar(action: "availability" | "book" | "cancel", payload: Record<string, unknown>) {
   const url = process.env.DELIVERY_BOOKING_SCRIPT_URL
   const secret = process.env.DELIVERY_BOOKING_SECRET
   if (!url || !secret) throw new Error("Delivery calendar connection is not configured.")

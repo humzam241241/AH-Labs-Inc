@@ -4,12 +4,13 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { currentAccount } from "@/lib/account-access"
 import { GoogleSignIn } from "@/components/google-sign-in"
 import { SignOutButton } from "@/components/sign-out-button"
+import { CustomerOrderActions } from "@/components/customer-order-actions"
 
 export const metadata: Metadata = { title: "My account", description: "Manage AH Gifts orders, deliveries, invoices, rewards, and account benefits." }
 export const dynamic = "force-dynamic"
 
 type Props = { searchParams?: { next?: string; auth?: string } }
-type Order = { id: string; order_number: string; status: string | null; items: unknown; total_cents: number | null; currency: string | null; delivery_window_start: string | null; created_at: string }
+type Order = { id: string; order_number: string; status: string | null; items: unknown; total_cents: number | null; currency: string | null; paid_at: string | null; delivery_window_start: string | null; created_at: string }
 type Invoice = { id: string; invoice_number: string; status: string; total_cents: number; currency: string; paid_at: string | null; issued_at: string | null; created_at: string }
 type Promo = { id: string; code: string; title: string; description: string | null; discount_label: string; expires_at: string | null; redeemed_at: string | null; active: boolean }
 
@@ -43,7 +44,17 @@ function AccountUnavailable() {
 
 function OrderCard({ order, past = false }: { order: Order; past?: boolean }) {
   const summaries = itemSummaries(order.items)
-  return <article className="dashboard-order-card"><div className="dashboard-order-top"><div><p className="eyebrow">{order.order_number}</p><h3>{itemNames(order.items)}</h3></div><span className={`status-chip ${terminalStatuses.has(String(order.status).toLowerCase()) ? "" : "approved"}`}>{String(order.status || "pending").replaceAll("_", " ")}</span></div><dl><div><dt>Placed</dt><dd>{date(order.created_at)}</dd></div><div><dt>Total</dt><dd>{money(order.total_cents, order.currency || "CAD")}</dd></div><div><dt>Delivery</dt><dd>{date(order.delivery_window_start, true)}</dd></div></dl>{summaries.length > 0 && <ul className="dashboard-order-specs">{summaries.map((summary, index) => <li key={index}><strong>{summary.label}</strong>{summary.detail && <span>{summary.detail}</span>}</li>)}</ul>}<div className="dashboard-order-actions"><Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>{past ? "Order again" : "View specifications"} <i className="css-arrow" aria-hidden="true" /></Link></div></article>
+  const status = String(order.status || "pending").toLowerCase()
+  const editable = !past && !order.paid_at && (status === "pending" || status === "awaiting_payment")
+  return <article className="dashboard-order-card">
+    <div className="dashboard-order-top"><div><p className="eyebrow">{order.order_number}</p><h3>{itemNames(order.items)}</h3></div><span className={`status-chip ${terminalStatuses.has(status) ? "" : "approved"}`}>{status.replaceAll("_", " ")}</span></div>
+    <dl><div><dt>Placed</dt><dd>{date(order.created_at)}</dd></div><div><dt>Total</dt><dd>{money(order.total_cents, order.currency || "CAD")}</dd></div><div><dt>Delivery</dt><dd>{date(order.delivery_window_start, true)}</dd></div></dl>
+    {summaries.length > 0 && <ul className="dashboard-order-specs">{summaries.map((summary, index) => <li key={index}><strong>{summary.label}</strong>{summary.detail && <span>{summary.detail}</span>}</li>)}</ul>}
+    <div className="dashboard-order-actions">{editable
+      ? <CustomerOrderActions orderId={order.id} orderNumber={order.order_number} items={order.items} />
+      : <Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>{past ? "Order again" : "View specifications"} <i className="css-arrow" aria-hidden="true" /></Link>}
+    </div>
+  </article>
 }
 
 export default async function AccountPage({ searchParams }: Props) {
