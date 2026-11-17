@@ -10,6 +10,16 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+-- Existing projects may already have a minimal profiles table. Upgrade it in place.
+alter table public.profiles add column if not exists email text;
+alter table public.profiles add column if not exists full_name text;
+alter table public.profiles add column if not exists status text not null default 'pending';
+alter table public.profiles add column if not exists role text not null default 'customer';
+alter table public.profiles add column if not exists approved_at timestamptz;
+alter table public.profiles add column if not exists approved_by uuid references auth.users(id);
+alter table public.profiles add column if not exists created_at timestamptz not null default now();
+alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+update public.profiles set status = coalesce(status, 'pending'), role = coalesce(role, 'customer') where status is null or role is null;
 create table if not exists public.loyalty_accounts (
   customer_id uuid primary key references public.profiles(id) on delete cascade,
   points_balance integer not null default 0 check (points_balance >= 0),
