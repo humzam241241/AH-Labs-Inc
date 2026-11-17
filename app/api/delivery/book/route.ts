@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { callDeliveryCalendar, cleanText, validIsoDateTime } from "@/lib/delivery-booking"
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server"
+import { catalogKeyForDraft, defaultPriceCents, getCatalogItem } from "@/lib/catalog-pricing"
 import { requireApprovedCustomer } from "@/lib/account-access"
 
 export const runtime = "nodejs"
@@ -73,11 +74,20 @@ async function saveCustomerOrder(input: { address: string; order: string; orderD
 
   const admin = createSupabaseAdminClient()
   const orderNumber = `AH-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+  const draft = input.orderDraft || (input.order ? { kind: "3d", productName: input.order, reference: "" } : null)
+  const catalogItemKey = draft ? catalogKeyForDraft(draft) : ""
+  const catalogItem = catalogItemKey ? await getCatalogItem(catalogItemKey) : null
+  const quantity = Math.min(999, Math.max(1, Math.round(Number(draft?.quantity) || 1)))
+  const unitPriceCents = catalogItem?.price_cents ?? defaultPriceCents(catalogItemKey)
+  const pricedItem = draft ? { ...draft, catalogItemKey: catalogItemKey || null, quantity, unitPriceCents, lineTotalCents: unitPriceCents == null ? null : unitPriceCents * quantity } : { name: input.order }
+  const totalCents = unitPriceCents == null ? null : unitPriceCents * quantity
   const { error } = await admin.from("orders").insert({
     customer_id: user.id,
     order_number: orderNumber,
     status: "pending",
-    items: input.orderDraft ? [input.orderDraft] : input.order ? [{ name: input.order }] : [],
+    items: [pricedItem],
+    total_cents: totalCents,
+    currency: "CAD",
     delivery_address: input.address,
     delivery_window_start: input.slotStart,
     booking_reference: input.result.bookingId ?? null,
