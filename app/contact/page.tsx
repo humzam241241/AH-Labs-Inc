@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ContactForm } from "@/components/contact-form"
-import { inquiryCategories } from "@/lib/content"
 
 export const metadata: Metadata = {
   title: "General Inquiry",
