@@ -44,7 +44,7 @@ export default function GiftsPage() {
     <section className="shop-delivery-note"><div className="site-shell"><div><p className="eyebrow">Delivery</p><h2>Have an order ready?</h2><p>Choose a preferred delivery date and time, then text the request to AH Gifts for confirmation.</p></div><Link href="/gifts/delivery" className="round-button">Request a delivery time <span className="css-arrow" aria-hidden="true" /></Link></div></section>
 
     <section className="bulk-section"><div className="site-shell bulk-grid">
-      <div><p className="eyebrow">For your whole group</p><h2>Bulk card orders.</h2><p>Matching cards for weddings, events, teams, holidays, or customer thank-yous. Ask us about quantity, wording, and a design that fits.</p><Link href="/contact" className="round-button">Request a bulk quote <span className="css-arrow" aria-hidden="true" /></Link></div>
+      <div><p className="eyebrow">For your whole group</p><h2>Bulk card orders.</h2><p>Matching cards for weddings, events, teams, holidays, or customer thank-yous. Ask us about quantity, wording, and a design that fits.</p><Link href="/gifts/bulk-orders" className="round-button">Request a bulk quote <span className="css-arrow" aria-hidden="true" /></Link></div>
       <ImageSlot label="Cards for your event" />
     </div></section>
   </>
