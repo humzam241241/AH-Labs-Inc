@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { currentAccount } from "@/lib/account-access"
 import { GoogleSignIn } from "@/components/google-sign-in"
 import { SignOutButton } from "@/components/sign-out-button"
 
@@ -29,12 +30,11 @@ function OrderCard({ order, past = false }: { order: Order; past?: boolean }) {
 export default async function AccountPage({ searchParams }: Props) {
   const configured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY))
   if (!configured) return <AccountUnavailable />
+  const { user, profile } = await currentAccount()
   const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return <section className="account-page"><div className="site-shell account-shell"><div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>{searchParams?.auth === "failed" && <p className="form-status" role="alert">Google sign-in did not finish. Please try again.</p>}{searchParams?.auth === "timeout" && <p className="form-status" role="status">You were signed out after 15 minutes without activity. Sign in again to continue.</p>}{searchParams?.auth === "new-session" && <p className="form-status" role="status">For security, this browser session needs a fresh sign-in.</p>}<div className="account-auth-layout"><div className="account-auth-intro"><p className="eyebrow">Your AH Gifts space</p><h1>Everything you order, together.</h1><p>Apply with Google to keep active orders, delivery dates, invoices, rewards, and future offers in one account.</p><div className="account-auth-benefits"><div><strong>Track every order</strong><span>See current work, scheduled deliveries, invoices, and past purchases.</span></div><div><strong>Earn points</strong><span>Receive one point for every paid Canadian dollar.</span></div><div><strong>Reorder quickly</strong><span>Reuse specifications from a previous personalized order.</span></div></div></div><GoogleSignIn next={safeNext(searchParams?.next)} /></div></div></section>
 
-  const { data: profile } = await supabase.from("profiles").select("id, full_name, status, role").eq("id", user.id).maybeSingle()
   if (!profile || profile.status !== "approved") return <section className="account-page"><div className="site-shell account-shell"><div className="account-header"><div><p className="eyebrow">Account application</p><h1>{profile?.status === "rejected" ? "Application not approved" : "Application received."}</h1><p>{profile?.status === "rejected" ? "Contact AH Gifts if you believe this was a mistake." : "Your account is waiting for master approval. Ordering and your customer dashboard unlock once approved."}</p></div><SignOutButton /></div><div className="application-status"><span className={`status-chip ${profile?.status || "pending"}`}>{profile?.status || "pending"}</span><strong>{user.email}</strong><p>Signed in securely with Google. There is no separate AH Gifts password.</p></div></div></section>
 
   const [{ data: orderRows }, { data: invoiceRows }, { data: rewards }, { data: promoRows }] = await Promise.all([
