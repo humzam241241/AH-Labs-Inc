@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { AccountDecision, PaymentConfirmation } from "@/components/master-actions"
 import { CatalogEditor } from "@/components/catalog-editor"
 import { OrderEditor } from "@/components/order-editor"
+import { syncAuthUsersToProfiles } from "@/lib/account-access"
 
 export const dynamic = "force-dynamic"
 
@@ -14,6 +15,7 @@ export default async function MasterPage() {
   const access = await requireMasterAccount()
   if ("error" in access) redirect("/account")
   const supabase = createSupabaseServerClient()
+  await syncAuthUsersToProfiles()
   const [{ data: customers }, { data: orders }, { data: invoices }, { data: rewards }, { data: catalogItems }] = await Promise.all([
     supabase.from("profiles").select("id, email, full_name, status, created_at").eq("role", "customer").order("created_at", { ascending: false }),
     supabase.from("orders").select("id, customer_id, order_number, status, items, total_cents, currency, paid_at, delivery_window_start, created_at").order("created_at", { ascending: false }).limit(100),

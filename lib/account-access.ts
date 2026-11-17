@@ -50,6 +50,41 @@ export async function currentAccount() {
   return { user, profile: (created as AccountProfile | null) }
 }
 
+
+export async function syncAuthUsersToProfiles() {
+  if (!process.env.SUPABASE_SECRET_KEY) return
+  const admin = createSupabaseAdminClient()
+  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  if (error) {
+    console.error("Could not reconcile Auth users with AH Gifts profiles", error.message)
+    return
+  }
+  const users = data?.users ?? []
+  if (!users.length) return
+  const rows = users.map((user) => {
+    const isOwner = user.email?.toLowerCase() === OWNER_EMAIL
+    return {
+      id: user.id,
+      email: user.email ?? null,
+      full_name: user.user_metadata?.full_name ?? user.user_metadata?.name ?? null,
+      status: isOwner ? "approved" : "pending",
+      role: isOwner ? "master" : "customer",
+      approved_at: isOwner ? new Date().toISOString() : null,
+    }
+  })
+  const { error: profileError } = await admin
+    .from("profiles")
+    .upsert(rows, { onConflict: "id", ignoreDuplicates: true })
+  if (profileError) {
+    console.error("Could not reconcile AH Gifts profiles", profileError.message)
+    return
+  }
+  const { error: loyaltyError } = await admin
+    .from("loyalty_accounts")
+    .upsert(users.map((user) => ({ customer_id: user.id, points_balance: 0 })), { onConflict: "customer_id", ignoreDuplicates: true })
+  if (loyaltyError) console.error("Could not reconcile loyalty accounts", loyaltyError.message)
+}
+
 export async function requireApprovedCustomer() {
   const account = await currentAccount()
   if (!account.user) return { error: "Sign in before placing an order.", status: 401 as const }
