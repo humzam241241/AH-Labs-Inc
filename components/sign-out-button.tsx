@@ -20,7 +20,8 @@ export function SignOutButton() {
       })
       if (!response.ok) throw new Error("Sign out could not be completed.")
       await createSupabaseBrowserClient().auth.signOut()
-      try { sessionStorage.removeItem("ah-tab-session") } catch {}\n      window.location.replace("/account?signed_out=1")
+      try { sessionStorage.removeItem("ah-tab-session") } catch {}
+      window.location.replace("/account?signed_out=1")
     } catch (caught) {
       setBusy(false)
       setError(caught instanceof Error ? caught.message : "Sign out could not be completed.")
