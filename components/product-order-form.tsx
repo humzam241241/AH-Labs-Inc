@@ -51,7 +51,7 @@ export function ProductOrderForm({ productName, reference, categoryName }: Props
       customDimensions: customDimensions.trim(),
       quality,
       message: message.trim(),
-      quantity: Math.max(1, Number.parseInt(quantity, 10) || 1),
+      quantity: Math.min(28, Math.max(1, Number.parseInt(quantity, 10) || 1)),
       createdAt: new Date().toISOString(),
     }
 
@@ -82,10 +82,11 @@ export function ProductOrderForm({ productName, reference, categoryName }: Props
         "Small — A2 · 4.25 × 5.5 in",
         "Medium — A7 · 5 × 7 in",
         "Large — A5 · 5.8 × 8.3 in",
+        "Triple fold — 5 × 7 in (folded)",
         "Custom dimensions",
       ].map((option) => <label className="radio-option" key={option}>
         <input type="radio" name="dimensions" value={option} checked={dimensions === option} onChange={(event) => setDimensions(event.target.value)} />
-        <span><strong>{option}</strong><small>{option === "Custom dimensions" ? "Tell us the size you need below" : option.startsWith("Mini") ? "Keepsake square" : option.startsWith("Large") ? "Roomier folded card" : "Standard folded card"}</small></span>
+        <span><strong>{option}</strong><small>{option === "Custom dimensions" ? "Tell us the size you need below" : option.startsWith("Triple") ? "One standard tri-fold layout" : option.startsWith("Mini") ? "Keepsake square" : option.startsWith("Large") ? "Roomier folded card" : "Standard folded card"}</small></span>
       </label>)}
       <label className="form-field"><span>Custom dimensions <small>optional</small></span><input value={customDimensions} onChange={(event) => setCustomDimensions(event.target.value)} placeholder="Example: 140 × 190 mm folded" maxLength={100} /></label>
     </fieldset>
@@ -103,7 +104,7 @@ export function ProductOrderForm({ productName, reference, categoryName }: Props
     </fieldset>
 
     <div className="form-row">
-      <label className="form-field"><span>Quantity</span><input type="number" min="1" max="50" value={quantity} onChange={(event) => setQuantity(event.target.value)} /></label>
+      <label className="form-field"><span>Quantity <small>maximum 28</small></span><input type="number" min="1" max="28" value={quantity} onChange={(event) => setQuantity(event.target.value)} /></label>
       <div className="order-form-reference"><span>Design reference</span><strong>{reference}</strong><small>{categoryName}</small></div>
     </div>
 

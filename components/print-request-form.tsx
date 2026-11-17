@@ -26,6 +26,7 @@ function requestText(form: HTMLFormElement, product: Product) {
     `Requested dimensions: ${value("customSize")}`,
     `Name or text: ${value("personalization")}`,
     `Colour preference: ${value("colour")}`,
+    `Quantity: ${value("quantity")}`,
     `Idea and details: ${value("details")}`,
     "",
     `Customer name: ${value("customerName")}`,
@@ -100,7 +101,7 @@ export function PrintRequestForm({ product, canSend }: { product: Product; canSe
       colour: String(data.get("colour") || ""),
       details: String(data.get("details") || ""),
       referenceFileName: file?.name || "",
-      quantity: 1,
+      quantity: Math.min(28, Math.max(1, Number.parseInt(String(data.get("quantity") || "1"), 10) || 1)),
       createdAt: new Date().toISOString(),
     }))
 
@@ -160,6 +161,7 @@ export function PrintRequestForm({ product, canSend }: { product: Product; canSe
         <label className="form-field"><span>Name or text <small>optional</small></span><input name="personalization" maxLength={80} placeholder="Example: Maya" /></label>
         <label className="form-field"><span>Colour preference <small>optional</small></span><input name="colour" maxLength={80} placeholder="Example: sage green and cream" /></label>
       </div>
+      <label className="form-field"><span>Quantity <small>maximum 28</small></span><input type="number" name="quantity" min="1" max="28" defaultValue="1" /></label>
       <label className="form-field"><span>Describe your idea <small>required</small></span><textarea name="details" required maxLength={1500} rows={6} placeholder="Tell us how you want it to look, who it is for, and any details that matter." /></label>
       <label className="form-field file-field"><span>Reference file <small>optional</small></span><input type="file" name="reference" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" onChange={(event) => validFile(event.target.files?.[0])} /><small>PDF, PNG, or JPEG. Maximum 3 MB.</small></label>
     </fieldset>

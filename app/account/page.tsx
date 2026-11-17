@@ -3,56 +3,19 @@ import Link from "next/link"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { GoogleSignIn } from "@/components/google-sign-in"
 
-export const metadata: Metadata = { title: "My account", description: "Sign in to manage AH Gifts orders, custom specifications, and delivery updates." }
-
-type Props = { searchParams?: { next?: string } }
-
-function safeNext(value?: string) {
-  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/account"
-}
-
-function AccountUnavailable() {
-  return <section className="account-page"><div className="site-shell account-shell">
-    <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>
-    <div className="account-config-state">
-      <p className="eyebrow">AH Gifts account</p>
-      <h1>We’re finishing the sign-in setup.</h1>
-      <p>Shopping is ready. Account sign-in will be available as soon as the secure account connection is enabled for this production site.</p>
-      <Link href="/gifts" className="round-button">Continue shopping <span className="css-arrow" aria-hidden="true" /></Link>
-    </div>
-  </div></section>
-}
+export const metadata: Metadata = { title: "My account", description: "Apply for an AH Gifts account, track orders, invoices, points, and delivery updates." }
+type Props = { searchParams?: { next?: string; auth?: string } }
+function safeNext(value?: string) { return value && value.startsWith("/") && !value.startsWith("//") ? value : "/account" }
+const money = (cents: number | null, currency = "CAD") => cents == null ? "To be confirmed" : new Intl.NumberFormat("en-CA", { style: "currency", currency }).format(cents / 100)
+function AccountUnavailable() { return <section className="account-page"><div className="site-shell account-shell"><div className="account-config-state"><p className="eyebrow">AH Gifts account</p><h1>We’re finishing the sign-in setup.</h1><p>Shopping is ready. Account sign-in will be available as soon as the secure account connection is enabled for this production site.</p><Link href="/gifts" className="round-button">Continue shopping <span className="css-arrow" aria-hidden="true" /></Link></div></div></section> }
 
 export default async function AccountPage({ searchParams }: Props) {
   const configured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY))
   if (!configured) return <AccountUnavailable />
-
-  const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  const next = safeNext(searchParams?.next)
-
-  if (!user) return <section className="account-page"><div className="site-shell account-shell">
-    <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>
-    <div className="account-auth-layout">
-      <div className="account-auth-intro">
-        <p className="eyebrow">Your AH Gifts space</p>
-        <h1>One simple place for every order.</h1>
-        <p>Sign in to place custom card and 3D-printed gift orders, keep your design specifications, and see delivery updates when they are confirmed.</p>
-        <div className="account-auth-benefits">
-          <div><strong>Save specifications</strong><span>Keep your dimensions, quality, wording, and uploaded reference details together.</span></div>
-          <div><strong>Reorder faster</strong><span>Bring back a previous order without rebuilding it from scratch.</span></div>
-          <div><strong>Track delivery</strong><span>See confirmed delivery windows from your account.</span></div>
-        </div>
-      </div>
-      <GoogleSignIn next={next} />
-    </div>
-  </div></section>
-
-  const { data: orders } = await supabase.from("orders").select("*").eq("customer_id", user.id).order("created_at", { ascending: false })
-
-  return <section className="account-page"><div className="site-shell account-shell">
-    <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>
-    <div className="account-header"><div><p className="eyebrow">Signed in</p><h1>{user.user_metadata?.full_name || user.email}</h1><p>Your specifications, order history, and delivery updates.</p></div><form action="/api/auth/signout" method="post"><button className="button-secondary">Sign out</button></form></div>
-    <section className="account-orders"><div className="section-heading"><div><p className="eyebrow">Your history</p><h2>Orders</h2></div><Link href="/gifts" className="round-button">Shop gifts <span className="css-arrow" aria-hidden="true" /></Link></div>{orders?.length ? <div className="order-list">{orders.map((order) => <article className="order-card" key={order.id}><div><p className="eyebrow">{order.order_number}</p><h3>{String(order.status || "pending").replaceAll("_", " ")}</h3><p>{Array.isArray(order.items) ? order.items.map((item: { productName?: string; name?: string }) => item.productName || item.name).filter(Boolean).join(", ") : "AH Gifts order"}</p></div><dl><div><dt>Total</dt><dd>{order.total_cents ? new Intl.NumberFormat("en-CA", { style: "currency", currency: order.currency || "CAD" }).format(order.total_cents / 100) : "To be confirmed"}</dd></div><div><dt>Delivery</dt><dd>{order.delivery_window_start ? new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Toronto" }).format(new Date(order.delivery_window_start)) : "To be scheduled"}</dd></div></dl><Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>Reorder this <i className="css-arrow" aria-hidden="true" /></Link></article>)}</div> : <div className="empty-state"><h3>No orders yet.</h3><p>Your confirmed AH Gifts orders will appear here.</p><Link href="/gifts" className="round-button">Browse the gift shop <span className="css-arrow" aria-hidden="true" /></Link></div>}</section>
-  </div></section>
+  const supabase = createSupabaseServerClient(); const { data: { user } } = await supabase.auth.getUser(); const next = safeNext(searchParams?.next)
+  if (!user) return <section className="account-page"><div className="site-shell account-shell"><div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>{searchParams?.auth === "failed" && <p className="form-status" role="alert">Google sign-in did not finish. Please try again.</p>}<div className="account-auth-layout"><div className="account-auth-intro"><p className="eyebrow">Your AH Gifts space</p><h1>Apply once. Shop when approved.</h1><p>Approved members save specifications, receive invoices, track deliveries, and earn one point for every paid dollar.</p><div className="account-auth-benefits"><div><strong>Approval first</strong><span>Every account is reviewed before it can place an order.</span></div><div><strong>Keep records</strong><span>Orders, invoices, delivery details, and reward points stay in one place.</span></div><div><strong>Reorder faster</strong><span>Bring back a previous custom order without starting again.</span></div></div></div><GoogleSignIn next={next} /></div></div></section>
+  const { data: profile } = await supabase.from("profiles").select("id, full_name, status, role").eq("id", user.id).maybeSingle()
+  if (!profile || profile.status !== "approved") return <section className="account-page"><div className="site-shell account-shell"><div className="account-header"><div><p className="eyebrow">Account application</p><h1>{profile?.status === "rejected" ? "Application not approved" : "You’re on the list."}</h1><p>{profile?.status === "rejected" ? "Please contact AH Gifts if you think this was a mistake." : "Your application is waiting for AH Gifts approval. We’ll unlock ordering, invoices, delivery updates, and points once it is approved."}</p></div><form action="/api/auth/signout" method="post"><button className="button-secondary">Sign out</button></form></div><div className="application-status"><span className={`status-chip ${profile?.status || "pending"}`}>{profile?.status || "pending"}</span><strong>Account email</strong><p>{user.email}</p><Link href="/gifts" className="round-button">Keep browsing <span className="css-arrow" aria-hidden="true" /></Link></div></div></section>
+  const [{ data: orders }, { data: invoices }, { data: rewards }] = await Promise.all([supabase.from("orders").select("*").eq("customer_id", user.id).order("created_at", { ascending: false }), supabase.from("invoices").select("*").eq("customer_id", user.id).order("created_at", { ascending: false }), supabase.from("loyalty_accounts").select("points_balance").eq("customer_id", user.id).maybeSingle()])
+  return <section className="account-page"><div className="site-shell account-shell"><div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div><div className="account-header"><div><p className="eyebrow">Approved member</p><h1>{profile.full_name || user.user_metadata?.full_name || user.email}</h1><p>Your specifications, invoices, order history, reward points, and delivery updates.</p></div><div className="account-header-actions">{profile.role === "master" && <Link href="/master" className="button-secondary">Open master desk</Link>}<form action="/api/auth/signout" method="post"><button className="button-secondary">Sign out</button></form></div></div><section className="account-reward"><div><p className="eyebrow">AH Gifts rewards</p><strong>{rewards?.points_balance || 0}</strong><span>points</span></div><p>One point is earned for each paid CAD dollar. Points are added when AH Gifts confirms your Interac payment.</p></section><section className="account-orders"><div className="section-heading"><div><p className="eyebrow">Your history</p><h2>Orders</h2></div><Link href="/gifts" className="round-button">Shop gifts <span className="css-arrow" aria-hidden="true" /></Link></div>{orders?.length ? <div className="order-list">{orders.map((order) => <article className="order-card" key={order.id}><div><p className="eyebrow">{order.order_number}</p><h3>{String(order.status || "pending").replaceAll("_", " ")}</h3><p>{Array.isArray(order.items) ? order.items.map((item: { productName?: string; name?: string }) => item.productName || item.name).filter(Boolean).join(", ") : "AH Gifts order"}</p></div><dl><div><dt>Total</dt><dd>{money(order.total_cents, order.currency)}</dd></div><div><dt>Delivery</dt><dd>{order.delivery_window_start ? new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Toronto" }).format(new Date(order.delivery_window_start)) : "To be scheduled"}</dd></div></dl><Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>Reorder this <i className="css-arrow" aria-hidden="true" /></Link></article>)}</div> : <div className="empty-state"><h3>No orders yet.</h3><p>Your confirmed AH Gifts orders will appear here.</p></div>}</section><section className="account-invoices"><div className="section-heading"><div><p className="eyebrow">Receipts</p><h2>Invoices</h2></div></div>{invoices?.length ? <div className="invoice-list">{invoices.map((invoice) => <article key={invoice.id}><strong>{invoice.invoice_number}</strong><span>{money(invoice.total_cents, invoice.currency)}</span><small>{invoice.paid_at ? `Paid ${new Intl.DateTimeFormat("en-CA", { dateStyle: "medium" }).format(new Date(invoice.paid_at))}` : invoice.status}</small></article>)}</div> : <div className="empty-state"><h3>No invoices yet.</h3><p>Your invoice appears once your Interac payment is confirmed.</p></div>}</section></div></section>
 }
