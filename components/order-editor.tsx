@@ -46,6 +46,7 @@ function initialLines(items: unknown) {
 
 export function OrderEditor({ orderId, orderNumber, status, items, totalCents, currency, paid }: Props) {
   const [lines, setLines] = useState<Line[]>(() => initialLines(items))
+  const [orderNumberInput, setOrderNumberInput] = useState(orderNumber)
   const [savedTotal, setSavedTotal] = useState<number | null>(totalCents)
   const [message, setMessage] = useState("")
   const [busy, setBusy] = useState(false)
@@ -69,7 +70,7 @@ export function OrderEditor({ orderId, orderNumber, status, items, totalCents, c
     const response = await fetch(`/api/master/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: lines, status }),
+      body: JSON.stringify({ items: lines, status, orderNumber: orderNumberInput }),
     })
     const result = await response.json().catch(() => ({}))
     if (response.ok) {
@@ -82,7 +83,7 @@ export function OrderEditor({ orderId, orderNumber, status, items, totalCents, c
   }
 
   return <div className="order-editor">
-    <div className="order-editor-heading"><div><p className="eyebrow">Editable order</p><h3>{orderNumber}</h3></div><div className="order-editor-total"><span>Account total</span><strong>{money(savedTotal, currency)}</strong></div></div>
+    <div className="order-editor-heading"><div><p className="eyebrow">Editable order</p><label className="order-number-field"><span>Order number</span><input value={orderNumberInput} maxLength={80} onChange={(event) => setOrderNumberInput(event.target.value)} /></label></div><div className="order-editor-total"><span>Account total</span><strong>{money(savedTotal, currency)}</strong></div></div>
     {paid && <p className="order-editor-note">This order is marked paid. Its order history can be corrected, but paid invoices and loyalty entries are preserved.</p>}
     <div className="order-editor-lines">{lines.map((line, index) => <article className="order-editor-line" key={index}>
       <div className="order-editor-line-top"><strong>Item {index + 1}</strong><span>{money(lineTotal(line), currency)}</span></div>
