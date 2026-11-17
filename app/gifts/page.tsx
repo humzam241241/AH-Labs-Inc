@@ -19,7 +19,7 @@ export default function GiftsPage() {
       <p className="eyebrow">Welcome to AH Gifts</p>
       <h1>A little more<br />personal.</h1>
       <p className="script-line">Made for their moment.</p>
-      <p className="hero-copy">Choose a card, find a small gift, or bring us an idea to make your own.</p>
+      <p className="hero-copy">Choose a card, find a small gift, or bring us an idea to make your own.</p><div className="shop-quick-links"><Link className="round-button" href="/gifts/cards">Shop cards <span className="css-arrow" aria-hidden="true" /></Link><Link className="text-action" href="/gifts/3d-printed">Shop 3D gifts <span className="css-arrow" aria-hidden="true" /></Link></div>
     </div></section>
 
     <section className="gift-shop site-shell shop-choices">
