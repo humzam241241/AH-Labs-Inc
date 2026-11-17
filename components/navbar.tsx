@@ -15,14 +15,13 @@ export function Navbar() {
       <Link href="/" className="wordmark" onClick={() => setOpen(false)}>AH <span>Labs.</span></Link>
       <nav className="desktop-nav" aria-label="Primary navigation">
         <Link href="/" className={pathname === "/" ? "active" : ""}>Company</Link>
-        <Link href="/#ventures">Ventures</Link>
         <Link href="/gifts" className={pathname.startsWith("/gifts") ? "active" : ""}>Shop</Link>
         <div className="nav-dropdown">
           <Link href="/gifts/cards">Cards</Link>
           <div className="nav-dropdown-menu">{cardLinks.map(([label, id]) => <Link key={id} href={`/gifts/cards/${id}`}>{label}</Link>)}</div>
         </div>
         <Link href="/gifts/3d-printed">3D gifts</Link>
-        <Link href="/gifts/cards#bulk-orders">Bulk orders</Link>
+        <Link href="/gifts/bulk-orders">Bulk orders</Link>
         <Link href="/account" className={pathname.startsWith("/account") ? "active" : ""}>My account</Link>
         <div className="nav-dropdown">
           <Link href="/contact">Help</Link>
@@ -39,8 +38,7 @@ export function Navbar() {
     </div>
     {open && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation"><div className="site-shell">
       <Link href="/" onClick={() => setOpen(false)}>Company<span className="css-arrow" /></Link>
-      <Link href="/#ventures" onClick={() => setOpen(false)}>Ventures<span className="css-arrow" /></Link>
-      <Link href="/gifts" onClick={() => setOpen(false)}>Gift shop<span className="css-arrow" /></Link>
+            <Link href="/gifts" onClick={() => setOpen(false)}>Gift shop<span className="css-arrow" /></Link>
       <p className="mobile-nav-label">Cards</p>
       <Link className="mobile-card-link" href="/gifts/cards" onClick={() => setOpen(false)}>Browse all cards</Link>
       {cardLinks.map(([label, id]) => <Link className="mobile-card-link" key={id} href={`/gifts/cards/${id}`} onClick={() => setOpen(false)}>{label}</Link>)}
