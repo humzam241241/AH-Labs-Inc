@@ -11,7 +11,22 @@ function safeNext(value?: string) {
   return value && value.startsWith("/") && !value.startsWith("//") ? value : "/account"
 }
 
+function AccountUnavailable() {
+  return <section className="account-page"><div className="site-shell account-shell">
+    <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>
+    <div className="account-config-state">
+      <p className="eyebrow">AH Gifts account</p>
+      <h1>We’re finishing the sign-in setup.</h1>
+      <p>Shopping is ready. Account sign-in will be available as soon as the secure account connection is enabled for this production site.</p>
+      <Link href="/gifts" className="round-button">Continue shopping <span className="css-arrow" aria-hidden="true" /></Link>
+    </div>
+  </div></section>
+}
+
 export default async function AccountPage({ searchParams }: Props) {
+  const configured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+  if (!configured) return <AccountUnavailable />
+
   const supabase = createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   const next = safeNext(searchParams?.next)
