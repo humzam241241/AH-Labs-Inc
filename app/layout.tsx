@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import { SessionGuard } from "@/components/session-guard"
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ahlabsinc.ca"),
@@ -11,5 +12,5 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><Navbar /><main>{children}</main><Footer /></body></html>
+  return <html lang="en"><body><Navbar /><SessionGuard /><main>{children}</main><Footer /></body></html>
 }

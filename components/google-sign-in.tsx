@@ -18,6 +18,7 @@ export function GoogleSignIn({ next = "/account" }: { next?: string }) {
   async function signIn() {
     setBusy(true)
     setMessage("")
+    try { sessionStorage.setItem("ah-google-oauth-pending", "1") } catch {}
 
     const { error } = await createSupabaseBrowserClient().auth.signInWithOAuth({
       provider: "google",
@@ -29,6 +30,7 @@ export function GoogleSignIn({ next = "/account" }: { next?: string }) {
     if (error) {
       setMessage(error.message)
       setBusy(false)
+      try { sessionStorage.removeItem("ah-google-oauth-pending") } catch {}
     }
   }
 
