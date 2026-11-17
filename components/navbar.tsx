@@ -12,7 +12,7 @@ export function Navbar() {
   const pathname = usePathname()
   return <header className="site-header">
     <div className="site-shell nav-shell">
-      <Link href="/" className="wordmark" onClick={() => setOpen(false)}>AH <span>Labs.</span></Link>
+      <Link href="/" className="wordmark" onClick={() => setOpen(false)}>AH <span>Gifts.</span></Link>
       <nav className="desktop-nav" aria-label="Primary navigation">
         <Link href="/" className={pathname === "/" ? "active" : ""}>Company</Link>
         <Link href="/gifts" className={pathname.startsWith("/gifts") ? "active" : ""}>Shop</Link>
