@@ -223,7 +223,7 @@ a{color:inherit}
 .desktop-nav a{color:#59634f}
 .desktop-nav a:hover,.desktop-nav a.active{color:var(--organic-terracotta)}
 .eyebrow{color:var(--organic-moss)}
-.round-button{background:var(--organic-terracotta);border-color:var(--organic-terracotta);color:#F3E9D8;box-shadow:0 10px 24px rgba(96,78,53,.16);transition:transform .35s ease,background .35s ease,box-shadow .35s ease}
+.round-button{background:var(--organic-terracotta);border-color:var(--organic-terracotta);color:var(--organic-sand);box-shadow:0 10px 24px rgba(96,78,53,.16);transition:transform .35s ease,background .35s ease,box-shadow .35s ease}
 .round-button:hover{background:var(--organic-moss);border-color:var(--organic-moss);box-shadow:0 14px 28px rgba(96,108,56,.2)}
 .round-button.light{background:var(--organic-sand);border-color:var(--organic-sand);color:var(--organic-ink)}
 .home-hero{background:radial-gradient(circle at 50% 40%,rgba(176,139,110,.22),transparent 48%),var(--organic-sand)}
@@ -243,12 +243,12 @@ a{color:inherit}
 .gifts-hero h1,.card-gallery-hero h1{color:var(--organic-ink)}
 .shop-quick-links{display:flex;align-items:center;justify-content:center;gap:1.2rem;flex-wrap:wrap;margin-top:1.6rem}
 .shop-quick-links .text-action{border:0;padding:0}
-.gift-choice-card,.printed-product-card,.category-card,.card-design-item{border-color:rgba(96,108,56,.24);border-radius:24px;background:#E2D2B8;box-shadow:0 18px 40px rgba(85,67,45,.13)}
+.gift-choice-card,.printed-product-card,.category-card,.card-design-item{border-color:rgba(96,108,56,.24);border-radius:24px;background:var(--organic-oat);box-shadow:0 18px 40px rgba(85,67,45,.13)}
 .gift-choice-card:hover,.printed-product-card:hover,.card-design-item:hover{box-shadow:0 24px 55px rgba(85,67,45,.18)}
 .gift-choice-card .shop-card-art,.printed-product-image,.card-artwork,.category-image{background:var(--organic-sage)}
 .choice-cards .shop-card-art{background:var(--organic-clay)}
 .choice-printed .shop-card-art{background:var(--organic-sage)}
-.gift-choice-card>div:last-child,.printed-product-copy,.card-design-caption{background:#E2D2B8}
+.gift-choice-card>div:last-child,.printed-product-copy,.card-design-caption{background:var(--organic-oat)}
 .choice-link,.category-view,.card-view-action{color:var(--organic-terracotta)}
 .shop-custom,.card-gallery-custom,.printed-custom-band{background:var(--organic-clay);color:var(--organic-ink)}
 .shop-custom h2,.card-gallery-custom h2,.printed-custom-grid h2{color:var(--organic-ink)}
@@ -257,7 +257,7 @@ a{color:inherit}
 .card-detail-page,.request-page,.delivery-page,.payment-page,.account-page,.inquiry-page{background:var(--organic-surface)}
 .card-detail-art,.card-feature-image,.card-custom-art{border-color:rgba(96,108,56,.24);border-radius:24px;background:var(--organic-sage);box-shadow:0 22px 48px rgba(85,67,45,.14)}
 .card-reference,.request-summary,.booking-details{border-color:rgba(96,108,56,.3)}
-.product-order-form,.request-form,.delivery-card,.payment-summary,.payment-instructions,.payment-confirmation,.payment-empty,.inquiry-page .rule-box,.account-auth-card{border-color:rgba(96,108,56,.25);border-radius:24px;background:#E2D2B8;box-shadow:0 20px 50px rgba(85,67,45,.12)}
+.product-order-form,.request-form,.delivery-card,.payment-summary,.payment-instructions,.payment-confirmation,.payment-empty,.inquiry-page .rule-box,.account-auth-card{border-color:rgba(96,108,56,.25);border-radius:24px;background:var(--organic-oat);box-shadow:0 20px 50px rgba(85,67,45,.12)}
 .product-order-form fieldset,.fulfillment-panel{border-color:rgba(96,108,56,.25);border-radius:18px;background:var(--organic-sand)}
 .radio-option,.fulfillment-option{border-color:rgba(96,108,56,.28);border-radius:16px;background:rgba(232,220,199,.7)}
 .radio-option:has(input:checked),.fulfillment-option.selected{border-color:var(--organic-terracotta);background:rgba(198,107,61,.12)}
@@ -270,7 +270,7 @@ a{color:inherit}
 .travel-summary{background:rgba(139,157,131,.28)}
 .slot-option span{border-color:rgba(96,108,56,.32);background:var(--organic-sand)}
 .slot-option:hover span,.slot-option.selected span{border-color:var(--organic-moss);background:var(--organic-sage);color:var(--organic-ink)}
-.account-config-state{background:#E2D2B8;border-color:rgba(96,108,56,.25);border-radius:24px}
+.account-config-state{background:var(--organic-oat);border-color:rgba(96,108,56,.25);border-radius:24px}
 .inquiry-page .button-primary{background:var(--organic-terracotta);border-color:var(--organic-terracotta)}
 .inquiry-links a,.text-action{color:var(--organic-terracotta);border-color:rgba(96,108,56,.3)}
 .inquiry-prompt,.inquiry-steps{border-color:rgba(96,108,56,.3)}
