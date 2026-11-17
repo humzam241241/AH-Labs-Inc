@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { callDeliveryCalendar, cleanText, validIsoDateTime } from "@/lib/delivery-booking"
 import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server"
+import { requireApprovedCustomer } from "@/lib/account-access"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -27,12 +28,14 @@ function cleanOrderDraft(input: unknown) {
     colour: cleanText(draft.colour, 80),
     details: cleanText(draft.details, 1500),
     referenceFileName: cleanText(draft.referenceFileName, 160),
-    quantity: Math.min(50, Math.max(1, Number(draft.quantity) || 1)),
+    quantity: Math.min(28, Math.max(1, Number(draft.quantity) || 1)),
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const access = await requireApprovedCustomer()
+    if ("error" in access) return NextResponse.json({ message: access.error }, { status: access.status })
     const body = await request.json() as Record<string, unknown>
     if (cleanText(body.website, 200)) return NextResponse.json({ ok: true })
 
