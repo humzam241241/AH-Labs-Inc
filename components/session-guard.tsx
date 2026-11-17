@@ -16,7 +16,7 @@ async function clearSession() {
       cache: "no-store",
     })
   } catch {}
-  try { await createSupabaseBrowserClient().auth.signOut() } catch {}
+  try { await createSupabaseBrowserClient().auth.signOut({ scope: "global" }) } catch {}
 }
 
 export function SessionGuard() {
