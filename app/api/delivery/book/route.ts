@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { callDeliveryCalendar, cleanText, validIsoDateTime } from "@/lib/delivery-booking"
-import { createSupabaseAdminClient, createSupabaseServerClient } from "@/lib/supabase/server"
-import { catalogKeyForDraft, defaultPriceCents, getCatalogItem } from "@/lib/catalog-pricing"
+import { createSupabaseAdminClient } from "@/lib/supabase/server"
+import { calculateCheckoutPricing, CheckoutPricing, CheckoutPricingError } from "@/lib/checkout-pricing"
 import { requireApprovedCustomer } from "@/lib/account-access"
 
 export const runtime = "nodejs"
@@ -29,7 +29,7 @@ function cleanOrderDraft(input: unknown) {
     colour: cleanText(draft.colour, 80),
     details: cleanText(draft.details, 1500),
     referenceFileName: cleanText(draft.referenceFileName, 160),
-    quantity: Math.min(28, Math.max(1, Number(draft.quantity) || 1)),
+    quantity: Math.min(28, Math.max(1, Math.round(Number(draft.quantity) || 1))),
   }
 }
 
@@ -55,47 +55,53 @@ export async function POST(request: Request) {
     if (address.length < 8) return NextResponse.json({ message: "Enter the complete delivery address." }, { status: 400 })
     if (!validIsoDateTime(slotStart)) return NextResponse.json({ message: "Choose an available delivery time." }, { status: 400 })
     if (!requestId) return NextResponse.json({ message: "Refresh the page and try again." }, { status: 400 })
+    if (!orderDraft) return NextResponse.json({ message: "Your order details are incomplete." }, { status: 400 })
 
+    const pricing = await calculateCheckoutPricing(access.account.user.id, orderDraft, body.promoCode)
     const result = await callDeliveryCalendar("book", { customerName, phone, email, address, order, notes, slotStart, requestId })
-    const orderNumber = await saveCustomerOrder({ address, order, orderDraft, notes, slotStart, result })
-    return NextResponse.json({ ...result, orderNumber })
+    const orderNumber = await saveCustomerOrder({ customerId: access.account.user.id, address, orderDraft, notes, slotStart, result, pricing })
+    return NextResponse.json({ ...result, orderNumber, pricing })
   } catch (error) {
     const message = error instanceof Error ? error.message : "The delivery could not be booked."
     const conflict = /no longer available|already booked|conflict/i.test(message)
-    return NextResponse.json({ message }, { status: conflict ? 409 : message.includes("not configured") ? 503 : 502 })
+    const status = error instanceof CheckoutPricingError ? 400 : conflict ? 409 : message.includes("not configured") ? 503 : 502
+    return NextResponse.json({ message }, { status })
   }
 }
 
-async function saveCustomerOrder(input: { address: string; order: string; orderDraft: Record<string, unknown> | null; notes: string; slotStart: string; result: Record<string, unknown> }) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) return ""
-  const authClient = createSupabaseServerClient()
-  const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return ""
-
+async function saveCustomerOrder(input: { customerId: string; address: string; orderDraft: Record<string, unknown>; notes: string; slotStart: string; result: Record<string, unknown>; pricing: CheckoutPricing }) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error("Order storage is not configured.")
   const admin = createSupabaseAdminClient()
-  const orderNumber = `AH-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
-  const draft = input.orderDraft || (input.order ? { kind: "3d", productName: input.order, reference: "" } : null)
-  const catalogItemKey = draft ? catalogKeyForDraft(draft) : ""
-  const catalogItem = catalogItemKey ? await getCatalogItem(catalogItemKey) : null
-  const quantity = Math.min(999, Math.max(1, Math.round(Number(draft?.quantity) || 1)))
-  const unitPriceCents = catalogItem?.price_cents ?? defaultPriceCents(catalogItemKey)
-  const pricedItem = draft ? { ...draft, catalogItemKey: catalogItemKey || null, quantity, unitPriceCents, lineTotalCents: unitPriceCents == null ? null : unitPriceCents * quantity } : { name: input.order }
-  const totalCents = unitPriceCents == null ? null : unitPriceCents * quantity
+  const orderNumber = `AH-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`
+  const pricedItem = {
+    ...input.orderDraft,
+    catalogItemKey: input.pricing.catalogItemKey,
+    quantity: input.pricing.quantity,
+    unitPriceCents: input.pricing.unitPriceCents,
+    lineSubtotalCents: input.pricing.subtotalCents,
+    lineTotalCents: input.pricing.totalCents,
+    pricing: input.pricing,
+  }
   const { error } = await admin.from("orders").insert({
-    customer_id: user.id,
+    customer_id: input.customerId,
     order_number: orderNumber,
     status: "pending",
     items: [pricedItem],
-    total_cents: totalCents,
+    total_cents: input.pricing.totalCents,
     currency: "CAD",
     delivery_address: input.address,
     delivery_window_start: input.slotStart,
     booking_reference: input.result.bookingId ?? null,
-    notes: ["Awaiting Interac e-Transfer confirmation.", input.notes].filter(Boolean).join(" "),
+    notes: [
+      "Awaiting Interac e-Transfer confirmation.",
+      input.pricing.promoCode ? `Promo: ${input.pricing.promoCode} (${input.pricing.promoLabel}).` : "",
+      input.pricing.taxCents == null ? "HST will be calculated after the custom quote." : `HST (13%): $${(input.pricing.taxCents / 100).toFixed(2)}.`,
+      input.notes,
+    ].filter(Boolean).join(" "),
   })
   if (error) {
     console.error("Could not save customer order", error.message)
-    return ""
+    throw new Error("The delivery was reserved, but the order number could not be saved. Contact AH Gifts before trying again.")
   }
   return orderNumber
 }

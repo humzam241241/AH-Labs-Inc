@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
 
 type Draft = {
@@ -24,8 +25,20 @@ type Draft = {
 
 type Fulfillment = "shipping" | "delivery"
 type Availability = { slots: { start: string; end: string; label: string }[]; travelMinutes: number; origin: string }
+type Pricing = {
+  quantity: number
+  unitPriceCents: number | null
+  subtotalCents: number | null
+  discountCents: number | null
+  taxableCents: number | null
+  taxCents: number | null
+  totalCents: number | null
+  promoCode: string | null
+  promoLabel: string | null
+}
 
 const PENDING_ORDER_KEY = "ah-gifts:pending-order"
+const money = (cents: number | null) => cents == null ? "Pending quote" : new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(cents / 100)
 
 function torontoDate(offsetDays = 0) {
   const date = new Date(Date.now() + offsetDays * 86400000)
@@ -35,8 +48,8 @@ function torontoDate(offsetDays = 0) {
 }
 
 export default function PaymentsPage() {
+  const router = useRouter()
   const [draft, setDraft] = useState<Draft | null>(null)
-  const [orderNumber, setOrderNumber] = useState("")
   const [status, setStatus] = useState("")
   const [busy, setBusy] = useState(false)
   const [fulfillment, setFulfillment] = useState<Fulfillment>("shipping")
@@ -45,10 +58,13 @@ export default function PaymentsPage() {
   const [availability, setAvailability] = useState<Availability | null>(null)
   const [selectedStart, setSelectedStart] = useState("")
   const [checking, setChecking] = useState(false)
+  const [promoCode, setPromoCode] = useState("")
+  const [pricing, setPricing] = useState<Pricing | null>(null)
+  const [pricingBusy, setPricingBusy] = useState(false)
+  const [promoStatus, setPromoStatus] = useState("")
 
   const today = useMemo(() => torontoDate(), [])
   const maxDate = useMemo(() => torontoDate(60), [])
-  const interacEmail = process.env.NEXT_PUBLIC_INTERAC_EMAIL || ""
 
   useEffect(() => {
     try {
@@ -58,6 +74,35 @@ export default function PaymentsPage() {
       setStatus("Your saved specifications could not be read. Return to the product page and try again.")
     }
   }, [])
+
+  useEffect(() => {
+    if (!draft) return
+    void loadQuote("")
+    // The draft is intentionally the only automatic trigger. Promo codes use the Apply button.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft])
+
+  async function loadQuote(code = promoCode) {
+    if (!draft) return
+    setPricingBusy(true)
+    setPromoStatus(code ? "Checking code…" : "")
+    try {
+      const response = await fetch("/api/checkout/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draft, promoCode: code }),
+      })
+      const result = await response.json() as { pricing?: Pricing; message?: string }
+      if (!response.ok || !result.pricing) throw new Error(result.message || "The order total could not be calculated.")
+      setPricing(result.pricing)
+      setPromoStatus(code ? `Applied ${result.pricing.promoCode}.` : "")
+    } catch (error) {
+      setPromoStatus(error instanceof Error ? error.message : "The promo code could not be checked.")
+      if (!code) setPricing(null)
+    } finally {
+      setPricingBusy(false)
+    }
+  }
 
   function updateDelivery(key: keyof typeof delivery, value: string) {
     setDelivery((current) => ({ ...current, [key]: value }))
@@ -106,7 +151,7 @@ export default function PaymentsPage() {
     }
 
     setBusy(true)
-    setStatus(fulfillment === "delivery" ? "Reserving your delivery window and saving the order…" : "Saving your order…")
+    setStatus(fulfillment === "delivery" ? "Reserving your delivery window and creating the order number…" : "Creating your order number…")
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -131,50 +176,45 @@ export default function PaymentsPage() {
             notes: delivery.notes,
             slotStart: selectedStart,
             requestId,
+            promoCode,
           }),
         })
       } else {
         response = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ draft, fulfillmentMethod: "shipping", shipping }),
+          body: JSON.stringify({ draft, fulfillmentMethod: "shipping", shipping, promoCode }),
         })
       }
       const result = await response.json() as { message?: string; orderNumber?: string }
-      if (!response.ok) throw new Error(result.message || "The order could not be saved.")
-      setOrderNumber(result.orderNumber || "")
+      if (!response.ok) {
+        if (fulfillment === "delivery" && response.status === 409) {
+          setSelectedStart("")
+          await checkAvailability()
+          throw new Error("That delivery time was just taken. The calendar has been refreshed—choose another open time.")
+        }
+        throw new Error(result.message || "The order could not be saved.")
+      }
+      if (!result.orderNumber) throw new Error("The order was not assigned a reference number. Please try again.")
       sessionStorage.removeItem(PENDING_ORDER_KEY)
-      setStatus(fulfillment === "delivery" ? "Delivery reserved. Send the e-Transfer using the reference below." : "Order saved. Send the e-Transfer using the reference below.")
+      router.push(`/checkout/${encodeURIComponent(result.orderNumber)}`)
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "The order could not be saved. Please try again.")
-    } finally {
       setBusy(false)
     }
   }
 
-  if (orderNumber) return <section className="payment-page site-shell">
-    <p className="eyebrow">Interac e-Transfer</p>
-    <h1>Thank you — your order is in.</h1>
-    <div className="payment-confirmation">
-      <p>Use this order reference in the e-Transfer message so we can match your payment.</p>
-      <strong>{orderNumber}</strong>
-      <div className="payment-recipient"><span>Send to</span><b>{interacEmail || "Interac email is being configured"}</b></div>
-      <p className="payment-muted">{fulfillment === "delivery" ? "Your delivery window is reserved. AH Gifts will confirm the final amount and delivery details before production." : "AH Gifts will confirm the final amount, design details, and shipping timing before production."}</p>
-      <Link href="/account" className="round-button">View my account <span className="css-arrow" /></Link>
-    </div>
-  </section>
-
   return <section className="payment-page site-shell">
-    <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>Interac e-Transfer</span></div>
+    <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>Checkout</span></div>
     <div className="payment-header">
-      <p className="eyebrow">Secure order handoff</p>
-      <h1>Review your order, then choose how it reaches you.</h1>
-      <p>Your specifications stay attached to your customer account. An account is required before the order is placed.</p>
+      <p className="eyebrow">Quick checkout</p>
+      <h1>Review, choose fulfillment, and place your order.</h1>
+      <p>Your specifications stay attached to your approved customer account.</p>
     </div>
 
     {draft ? <div className="payment-grid">
-      <div className="payment-summary">
-        <p className="eyebrow">Your specifications</p>
+      <aside className="payment-summary">
+        <p className="eyebrow">Your order</p>
         <h2>{draft.productName}</h2>
         <dl>
           {draft.reference && <div><dt>Reference</dt><dd>{draft.reference}</dd></div>}
@@ -188,53 +228,56 @@ export default function PaymentsPage() {
           {draft.colour && <div><dt>Colour</dt><dd>{draft.colour}</dd></div>}
           {draft.details && <div><dt>Details</dt><dd>{draft.details}</dd></div>}
           {draft.referenceFileName && <div><dt>Reference file</dt><dd>{draft.referenceFileName}</dd></div>}
-          {draft.quantity && <div><dt>Quantity</dt><dd>{draft.quantity}</dd></div>}
+          <div><dt>Quantity</dt><dd>{draft.quantity || 1}</dd></div>
         </dl>
-      </div>
+        <div className="checkout-totals" aria-live="polite">
+          <div><span>Subtotal</span><strong>{pricingBusy && !pricing ? "Calculating…" : money(pricing?.subtotalCents ?? null)}</strong></div>
+          {!!pricing?.discountCents && <div className="checkout-discount"><span>Promo {pricing.promoCode}</span><strong>−{money(pricing.discountCents)}</strong></div>}
+          <div><span>HST (13%)</span><strong>{money(pricing?.taxCents ?? null)}</strong></div>
+          <div className="checkout-total"><span>Total</span><strong>{money(pricing?.totalCents ?? null)}</strong></div>
+          {pricing?.totalCents == null && <small>Custom items receive a final quote before payment. HST will be calculated on that quote.</small>}
+        </div>
+      </aside>
 
       <div className="payment-instructions">
-        <p className="eyebrow">Fulfillment</p>
-        <div className="fulfillment-choice" role="radiogroup" aria-label="Fulfillment method">
-          <label className={fulfillment === "shipping" ? "fulfillment-option selected" : "fulfillment-option"}><input type="radio" name="fulfillment" checked={fulfillment === "shipping"} onChange={() => setFulfillment("shipping")} /><span><strong>Shipping</strong><small>We confirm the shipping details and cost with you.</small></span></label>
-          <label className={fulfillment === "delivery" ? "fulfillment-option selected" : "fulfillment-option"}><input type="radio" name="fulfillment" checked={fulfillment === "delivery"} onChange={() => setFulfillment("delivery")} /><span><strong>Local delivery</strong><small>Choose an open 30-minute window from the shared calendar.</small></span></label>
-        </div>
+        <section className="checkout-step">
+          <span className="checkout-step-number">1</span><div><p className="eyebrow">Promo code</p><h2>Have a code?</h2></div>
+          <div className="promo-entry"><input value={promoCode} onChange={(event) => { setPromoCode(event.target.value.toUpperCase()); setPromoStatus("") }} placeholder="Enter promo code" maxLength={40} /><button type="button" className="button-secondary" onClick={() => loadQuote()} disabled={pricingBusy || !promoCode.trim()}>{pricingBusy ? "Checking…" : "Apply"}</button></div>
+          {promoStatus && <p className="form-status" role="status">{promoStatus}</p>}
+        </section>
 
-        {fulfillment === "shipping" ? <div className="fulfillment-panel">
-          <h3>Shipping details</h3>
-          <div className="form-row">
-            <label className="form-field"><span>Recipient name <small>required</small></span><input value={shipping.name} onChange={(e) => setShipping({ ...shipping, name: e.target.value })} autoComplete="name" /></label>
-            <label className="form-field"><span>Phone <small>optional</small></span><input value={shipping.phone} onChange={(e) => setShipping({ ...shipping, phone: e.target.value })} autoComplete="tel" /></label>
+        <section className="checkout-step">
+          <span className="checkout-step-number">2</span><div><p className="eyebrow">Fulfillment</p><h2>How should it reach you?</h2></div>
+          <div className="fulfillment-choice" role="radiogroup" aria-label="Fulfillment method">
+            <label className={fulfillment === "shipping" ? "fulfillment-option selected" : "fulfillment-option"}><input type="radio" name="fulfillment" checked={fulfillment === "shipping"} onChange={() => setFulfillment("shipping")} /><span><strong>Shipping</strong><small>We confirm the shipping cost with you.</small></span></label>
+            <label className={fulfillment === "delivery" ? "fulfillment-option selected" : "fulfillment-option"}><input type="radio" name="fulfillment" checked={fulfillment === "delivery"} onChange={() => setFulfillment("delivery")} /><span><strong>Local delivery</strong><small>Choose a live 30-minute calendar window.</small></span></label>
           </div>
-          <label className="form-field"><span>Street address <small>required</small></span><input value={shipping.address} onChange={(e) => setShipping({ ...shipping, address: e.target.value })} autoComplete="street-address" /></label>
-          <div className="form-row">
-            <label className="form-field"><span>City <small>required</small></span><input value={shipping.city} onChange={(e) => setShipping({ ...shipping, city: e.target.value })} autoComplete="address-level2" /></label>
-            <label className="form-field"><span>Province <small>required</small></span><input value={shipping.province} onChange={(e) => setShipping({ ...shipping, province: e.target.value })} autoComplete="address-level1" /></label>
-          </div>
-          <label className="form-field"><span>Postal code <small>required</small></span><input value={shipping.postalCode} onChange={(e) => setShipping({ ...shipping, postalCode: e.target.value })} autoComplete="postal-code" /></label>
-        </div> : <div className="fulfillment-panel">
-          <h3>Delivery details</h3>
-          <p className="payment-muted">The calendar checks your address, drive time from Pickering, and every existing booking before showing times.</p>
-          <div className="form-row">
-            <label className="form-field"><span>Your name <small>required</small></span><input value={delivery.name} onChange={(e) => updateDelivery("name", e.target.value)} autoComplete="name" /></label>
-            <label className="form-field"><span>Phone <small>optional</small></span><input value={delivery.phone} onChange={(e) => updateDelivery("phone", e.target.value)} autoComplete="tel" /></label>
-          </div>
-          <label className="form-field"><span>Email <small>optional</small></span><input type="email" value={delivery.email} onChange={(e) => updateDelivery("email", e.target.value)} autoComplete="email" placeholder="Used for delivery updates" /></label>
-          <label className="form-field"><span>Complete delivery address <small>required</small></span><input value={delivery.address} onChange={(e) => updateDelivery("address", e.target.value)} autoComplete="street-address" placeholder="Street, city, province, postal code" /></label>
-          <div className="form-row">
-            <label className="form-field"><span>Preferred date <small>required</small></span><input type="date" min={today} max={maxDate} value={delivery.date} onChange={(e) => updateDelivery("date", e.target.value)} /></label>
-            <div className="form-field"><span>Availability</span><button className="button-secondary availability-button" type="button" onClick={checkAvailability} disabled={checking}>{checking ? "Checking calendar…" : "Show available times"}</button></div>
-          </div>
-          {availability && <div className="checkout-availability"><p><strong>{availability.travelMinutes} min each way</strong><small>From {availability.origin}</small></p><div className="slot-grid" role="radiogroup" aria-label="Available delivery times">{availability.slots.map((slot) => <label className={selectedStart === slot.start ? "slot-option selected" : "slot-option"} key={slot.start}><input type="radio" name="checkoutSlot" value={slot.start} checked={selectedStart === slot.start} onChange={() => setSelectedStart(slot.start)} /><span>{slot.label}</span></label>)}</div></div>}
-          <label className="form-field"><span>Delivery notes <small>optional</small></span><textarea value={delivery.notes} onChange={(e) => updateDelivery("notes", e.target.value)} maxLength={800} rows={3} placeholder="Unit number, buzzer, or anything useful" /></label>
-        </div>}
 
-        <div className="payment-how-to-pay">
-          <p className="eyebrow">How to pay</p>
-          <ol><li>Press place order to save the specifications to your account.</li><li>Send an Interac e-Transfer to <strong>{interacEmail || "the business email shown after setup"}</strong>.</li><li>Include the order reference in the transfer message.</li></ol>
-          <p className="payment-muted">Do not send payment until AH Gifts confirms the final amount for your custom request.</p>
-          <button className="round-button" onClick={placeOrder} disabled={busy}>{busy ? "Saving order…" : "Place order and show e-Transfer details"}<span className="css-arrow" /></button>
+          {fulfillment === "shipping" ? <div className="fulfillment-panel">
+            <h3>Shipping details</h3>
+            <div className="form-row"><label className="form-field"><span>Recipient name <small>required</small></span><input value={shipping.name} onChange={(e) => setShipping({ ...shipping, name: e.target.value })} autoComplete="name" /></label><label className="form-field"><span>Phone <small>optional</small></span><input value={shipping.phone} onChange={(e) => setShipping({ ...shipping, phone: e.target.value })} autoComplete="tel" /></label></div>
+            <label className="form-field"><span>Street address <small>required</small></span><input value={shipping.address} onChange={(e) => setShipping({ ...shipping, address: e.target.value })} autoComplete="street-address" /></label>
+            <div className="form-row"><label className="form-field"><span>City <small>required</small></span><input value={shipping.city} onChange={(e) => setShipping({ ...shipping, city: e.target.value })} autoComplete="address-level2" /></label><label className="form-field"><span>Province <small>required</small></span><input value={shipping.province} onChange={(e) => setShipping({ ...shipping, province: e.target.value })} autoComplete="address-level1" /></label></div>
+            <label className="form-field"><span>Postal code <small>required</small></span><input value={shipping.postalCode} onChange={(e) => setShipping({ ...shipping, postalCode: e.target.value })} autoComplete="postal-code" /></label>
+          </div> : <div className="fulfillment-panel">
+            <h3>Delivery details</h3>
+            <p className="payment-muted">Times account for the shared calendar and travel from Pickering.</p>
+            <div className="form-row"><label className="form-field"><span>Your name <small>required</small></span><input value={delivery.name} onChange={(e) => updateDelivery("name", e.target.value)} autoComplete="name" /></label><label className="form-field"><span>Phone <small>optional</small></span><input value={delivery.phone} onChange={(e) => updateDelivery("phone", e.target.value)} autoComplete="tel" /></label></div>
+            <label className="form-field"><span>Email <small>optional</small></span><input type="email" value={delivery.email} onChange={(e) => updateDelivery("email", e.target.value)} autoComplete="email" placeholder="Used for delivery updates" /></label>
+            <label className="form-field"><span>Complete delivery address <small>required</small></span><input value={delivery.address} onChange={(e) => updateDelivery("address", e.target.value)} autoComplete="street-address" placeholder="Street, city, province, postal code" /></label>
+            <div className="form-row"><label className="form-field"><span>Preferred date <small>required</small></span><input type="date" min={today} max={maxDate} value={delivery.date} onChange={(e) => updateDelivery("date", e.target.value)} /></label><div className="form-field"><span>Availability</span><button className="button-secondary availability-button" type="button" onClick={checkAvailability} disabled={checking}>{checking ? "Checking calendar…" : "Show available times"}</button></div></div>
+            {availability && <div className="checkout-availability"><p><strong>{availability.travelMinutes} min each way</strong><small>From {availability.origin}</small></p><div className="slot-grid" role="radiogroup" aria-label="Available delivery times">{availability.slots.map((slot) => <label className={selectedStart === slot.start ? "slot-option selected" : "slot-option"} key={slot.start}><input type="radio" name="checkoutSlot" value={slot.start} checked={selectedStart === slot.start} onChange={() => setSelectedStart(slot.start)} /><span>{slot.label}</span></label>)}</div></div>}
+            <label className="form-field"><span>Delivery notes <small>optional</small></span><textarea value={delivery.notes} onChange={(e) => updateDelivery("notes", e.target.value)} maxLength={800} rows={3} placeholder="Unit number, buzzer, or anything useful" /></label>
+          </div>}
+        </section>
+
+        <section className="checkout-place-order">
+          <p className="eyebrow">Final step</p>
+          <h2>Create my order number</h2>
+          <p>The order will appear in your account and the master desk immediately. Interac e-Transfer details will be shown on the next screen when the business email is ready.</p>
+          <button className="round-button" onClick={placeOrder} disabled={busy}>{busy ? "Creating order…" : "Place order and continue"}<span className="css-arrow" /></button>
           {status && <p className="form-status" role="status">{status}</p>}
-        </div>
+        </section>
       </div>
     </div> : <div className="payment-empty"><h2>No saved order yet.</h2><p>Choose a card or 3D-printed gift first, then continue to checkout.</p><Link href="/gifts" className="round-button">Browse AH Gifts <span className="css-arrow" /></Link></div>}
   </section>
