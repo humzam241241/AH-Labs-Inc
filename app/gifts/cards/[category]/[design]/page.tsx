@@ -40,7 +40,7 @@ export default function CardDesignPage({ params }: Props) {
       <Link href={`/gifts/cards/${category.slug}`}>{category.name}</Link>
     </nav>
     <div className="card-detail-grid">
-      <div className="card-detail-art"><Image src={cardImage(category.slug, number)} alt={`${title} artwork preview`} fill sizes="(max-width: 850px) 100vw, 50vw" style={{ objectFit: "contain" }} priority /></div>
+      <div className="card-detail-art card-artwork-flip"><div className="card-face card-face-front"><Image src={cardImage(category.slug, number)} alt={`${title} artwork preview`} fill sizes="(max-width: 850px) 100vw, 50vw" style={{ objectFit: "contain" }} priority /></div><div className="card-face card-face-back" aria-hidden="true"><span>Inside the card</span><strong>Your message here</strong><small>Write it below to personalize this design.</small></div></div>
       <div className="card-detail-copy">
         <p className="eyebrow">{category.name} · Design {String(number).padStart(2, "0")}</p>
         <h1>{title}</h1>

@@ -40,7 +40,7 @@ export default function CardGalleryPage({ params }: Props) {
         const href = `/gifts/cards/${category.slug}/${String(number).padStart(2, "0")}`
         return <article className="card-design-item" key={code}>
           <Link href={href} aria-label={`View ${title}, design ${number}`}>
-            <div className="card-artwork"><Image src={cardImage(category.slug, number)} alt="" fill sizes="(max-width: 640px) 50vw, (max-width: 1000px) 33vw, 20vw" style={{ objectFit: "contain" }} /></div>
+            <div className="card-artwork card-artwork-flip"><div className="card-face card-face-front"><Image src={cardImage(category.slug, number)} alt="" fill sizes="(max-width: 640px) 50vw, (max-width: 1000px) 33vw, 20vw" style={{ objectFit: "contain" }} /></div><div className="card-face card-face-back" aria-hidden="true"><span>Inside the card</span><strong>Your message here</strong><small>Personalized at checkout</small></div></div>
             <div className="card-design-caption"><span>{String(number).padStart(2, "0")} / 10</span><h2>{title}</h2><span className="card-view-action">View design <i className="css-arrow" aria-hidden="true" /></span></div>
           </Link>
         </article>
