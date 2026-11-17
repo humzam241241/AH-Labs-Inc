@@ -81,12 +81,23 @@ export default async function CheckoutConfirmationPage({ params }: { params: { o
           <p>Send the confirmed total to:</p>
           <strong className="checkout-payment-email">{interacEmail}</strong>
           <p>Include <b>{order.order_number}</b> in the e-Transfer message so the payment can be matched to your order.</p>
+          <div className="checkout-payment-process">
+            <h3>What happens after you send it</h3>
+            <ol>
+              <li>Your order stays pending until AH Gifts verifies the deposit.</li>
+              <li>The master account confirms the exact amount received.</li>
+              <li>Your order changes to paid, an invoice is created, and reward points are added.</li>
+              <li>Production and delivery are updated separately; payment does not mark an order delivered.</li>
+            </ol>
+          </div>
         </> : <>
           <p>Your order is safely saved. The AH Gifts business Interac email will be added later.</p>
           <div className="checkout-payment-pending"><span>For now</span><strong>Do not send payment yet.</strong><small>AH Gifts will confirm the final amount and payment address before production.</small></div>
+          <p className="checkout-payment-safety">No payment is automatically collected or confirmed while the business email is missing.</p>
         </>}
         <div className="checkout-confirmation-actions"><Link href="/account" className="round-button">View my orders <span className="css-arrow" /></Link><Link href="/gifts" className="button-secondary">Continue shopping</Link></div>
       </aside>
     </div>
   </section>
 }
+

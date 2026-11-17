@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
@@ -38,6 +38,8 @@ type Pricing = {
 }
 
 const PENDING_ORDER_KEY = "ah-gifts:pending-order"
+const AVAILABILITY_CACHE_PREFIX = "ah-gifts:delivery-availability:"
+const AVAILABILITY_CACHE_MS = 45_000
 const money = (cents: number | null) => cents == null ? "Pending quote" : new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(cents / 100)
 
 function torontoDate(offsetDays = 0) {
@@ -45,6 +47,33 @@ function torontoDate(offsetDays = 0) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date)
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
   return `${values.year}-${values.month}-${values.day}`
+}
+
+function deliveryAvailabilityKey(address: string, date: string) {
+  return `${date}:${address.trim().toLowerCase().replace(/\s+/g, " ")}`
+}
+
+function readCachedAvailability(key: string) {
+  try {
+    const raw = sessionStorage.getItem(`${AVAILABILITY_CACHE_PREFIX}${key}`)
+    if (!raw) return null
+    const cached = JSON.parse(raw) as { savedAt?: number; data?: Availability }
+    if (!cached.savedAt || !cached.data || Date.now() - cached.savedAt > AVAILABILITY_CACHE_MS) {
+      sessionStorage.removeItem(`${AVAILABILITY_CACHE_PREFIX}${key}`)
+      return null
+    }
+    return cached.data
+  } catch {
+    return null
+  }
+}
+
+function cacheAvailability(key: string, data: Availability) {
+  try {
+    sessionStorage.setItem(`${AVAILABILITY_CACHE_PREFIX}${key}`, JSON.stringify({ savedAt: Date.now(), data }))
+  } catch {
+    // Availability still works when browser storage is blocked.
+  }
 }
 
 export default function PaymentsPage() {
@@ -56,12 +85,15 @@ export default function PaymentsPage() {
   const [shipping, setShipping] = useState({ name: "", address: "", city: "", province: "ON", postalCode: "", phone: "" })
   const [delivery, setDelivery] = useState({ name: "", address: "", phone: "", email: "", date: torontoDate(1), notes: "" })
   const [availability, setAvailability] = useState<Availability | null>(null)
+  const [availabilityStatus, setAvailabilityStatus] = useState("")
   const [selectedStart, setSelectedStart] = useState("")
   const [checking, setChecking] = useState(false)
   const [promoCode, setPromoCode] = useState("")
   const [pricing, setPricing] = useState<Pricing | null>(null)
   const [pricingBusy, setPricingBusy] = useState(false)
   const [promoStatus, setPromoStatus] = useState("")
+  const availabilityAbortRef = useRef<AbortController | null>(null)
+  const shownAvailabilityKeyRef = useRef("")
 
   const today = useMemo(() => torontoDate(), [])
   const maxDate = useMemo(() => torontoDate(60), [])
@@ -74,6 +106,8 @@ export default function PaymentsPage() {
       setStatus("Your saved specifications could not be read. Return to the product page and try again.")
     }
   }, [])
+
+  useEffect(() => () => availabilityAbortRef.current?.abort(), [])
 
   useEffect(() => {
     if (!draft) return
@@ -105,36 +139,70 @@ export default function PaymentsPage() {
   }
 
   function updateDelivery(key: keyof typeof delivery, value: string) {
-    setDelivery((current) => ({ ...current, [key]: value }))
+    const next = { ...delivery, [key]: value }
+    setDelivery(next)
     if (key === "address" || key === "date") {
-      setAvailability(null)
-      setSelectedStart("")
+      const nextKey = deliveryAvailabilityKey(next.address, next.date)
+      if (shownAvailabilityKeyRef.current && shownAvailabilityKeyRef.current !== nextKey) {
+        availabilityAbortRef.current?.abort()
+        shownAvailabilityKeyRef.current = ""
+        setAvailability(null)
+        setAvailabilityStatus("")
+        setSelectedStart("")
+      }
     }
   }
 
-  async function checkAvailability() {
-    if (delivery.address.trim().length < 8) {
-      setStatus("Enter the complete delivery address, including city and postal code.")
+  async function checkAvailability(forceRefresh = false) {
+    const address = delivery.address.trim().replace(/\s+/g, " ")
+    const date = delivery.date
+    if (address.length < 8) {
+      setAvailabilityStatus("Enter the complete delivery address, including city and postal code.")
       return
     }
+    const requestKey = deliveryAvailabilityKey(address, date)
+    const cached = forceRefresh ? null : readCachedAvailability(requestKey)
+    if (cached) {
+      shownAvailabilityKeyRef.current = requestKey
+      setAvailability(cached)
+      setSelectedStart("")
+      setAvailabilityStatus(cached.slots.length ? "Times updated just now. Choose a window." : "No windows are open on this date. Try another day.")
+      return
+    }
+
+    availabilityAbortRef.current?.abort()
+    const controller = new AbortController()
+    availabilityAbortRef.current = controller
+    shownAvailabilityKeyRef.current = requestKey
     setChecking(true)
-    setStatus("Calculating travel time and checking the calendar…")
+    setAvailabilityStatus("Checking travel time and the shared calendar…")
+    const timeoutId = window.setTimeout(() => controller.abort(), 15_000)
     try {
       const response = await fetch("/api/delivery/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: delivery.address, date: delivery.date }),
+        body: JSON.stringify({ address, date }),
+        signal: controller.signal,
       })
       const result = await response.json() as Availability & { message?: string }
       if (!response.ok) throw new Error(result.message || "Availability could not be checked.")
+      if (availabilityAbortRef.current !== controller) return
+      cacheAvailability(requestKey, result)
+      shownAvailabilityKeyRef.current = requestKey
       setAvailability(result)
       setSelectedStart("")
-      setStatus(result.slots.length ? "Choose an available 30-minute window below." : "No windows are open on this date. Try another day.")
+      setAvailabilityStatus(result.slots.length ? "Live times are ready. Choose a 30-minute window." : "No windows are open on this date. Try another day.")
     } catch (error) {
+      if (controller.signal.aborted && availabilityAbortRef.current !== controller) return
       setAvailability(null)
-      setStatus(error instanceof Error ? error.message : "Availability could not be checked.")
+      shownAvailabilityKeyRef.current = ""
+      setAvailabilityStatus(controller.signal.aborted ? "The calendar took too long to respond. Try again." : error instanceof Error ? error.message : "Availability could not be checked.")
     } finally {
-      setChecking(false)
+      window.clearTimeout(timeoutId)
+      if (availabilityAbortRef.current === controller) {
+        availabilityAbortRef.current = null
+        setChecking(false)
+      }
     }
   }
 
@@ -190,7 +258,7 @@ export default function PaymentsPage() {
       if (!response.ok) {
         if (fulfillment === "delivery" && response.status === 409) {
           setSelectedStart("")
-          await checkAvailability()
+          await checkAvailability(true)
           throw new Error("That delivery time was just taken. The calendar has been refreshed—choose another open time.")
         }
         throw new Error(result.message || "The order could not be saved.")
@@ -265,8 +333,10 @@ export default function PaymentsPage() {
             <div className="form-row"><label className="form-field"><span>Your name <small>required</small></span><input value={delivery.name} onChange={(e) => updateDelivery("name", e.target.value)} autoComplete="name" /></label><label className="form-field"><span>Phone <small>optional</small></span><input value={delivery.phone} onChange={(e) => updateDelivery("phone", e.target.value)} autoComplete="tel" /></label></div>
             <label className="form-field"><span>Email <small>optional</small></span><input type="email" value={delivery.email} onChange={(e) => updateDelivery("email", e.target.value)} autoComplete="email" placeholder="Used for delivery updates" /></label>
             <label className="form-field"><span>Complete delivery address <small>required</small></span><input value={delivery.address} onChange={(e) => updateDelivery("address", e.target.value)} autoComplete="street-address" placeholder="Street, city, province, postal code" /></label>
-            <div className="form-row"><label className="form-field"><span>Preferred date <small>required</small></span><input type="date" min={today} max={maxDate} value={delivery.date} onChange={(e) => updateDelivery("date", e.target.value)} /></label><div className="form-field"><span>Availability</span><button className="button-secondary availability-button" type="button" onClick={checkAvailability} disabled={checking}>{checking ? "Checking calendar…" : "Show available times"}</button></div></div>
-            {availability && <div className="checkout-availability"><p><strong>{availability.travelMinutes} min each way</strong><small>From {availability.origin}</small></p><div className="slot-grid" role="radiogroup" aria-label="Available delivery times">{availability.slots.map((slot) => <label className={selectedStart === slot.start ? "slot-option selected" : "slot-option"} key={slot.start}><input type="radio" name="checkoutSlot" value={slot.start} checked={selectedStart === slot.start} onChange={() => setSelectedStart(slot.start)} /><span>{slot.label}</span></label>)}</div></div>}
+            <div className="form-row delivery-availability-row"><label className="form-field"><span>Preferred date <small>required</small></span><input type="date" min={today} max={maxDate} value={delivery.date} onChange={(e) => updateDelivery("date", e.target.value)} /></label><div className="form-field"><span>Availability</span><button className="button-secondary availability-button" type="button" onClick={() => checkAvailability(Boolean(availability))} disabled={checking || delivery.address.trim().length < 8 || !delivery.date} aria-busy={checking}>{checking ? "Checking…" : availability ? "Refresh times" : "Show times"}</button></div></div>
+            {checking && !availability && <div className="availability-loading" role="status"><span className="availability-spinner" aria-hidden="true" /><div><strong>Checking the calendar</strong><small>Travel time and existing bookings are being compared.</small></div></div>}
+            {availability && <div className="checkout-availability"><div className="availability-summary"><strong>{availability.travelMinutes} min each way</strong><small>From {availability.origin}</small></div>{availability.slots.length ? <div className="slot-grid" role="radiogroup" aria-label="Available delivery times">{availability.slots.map((slot) => <label className={selectedStart === slot.start ? "slot-option selected" : "slot-option"} key={slot.start}><input type="radio" name="checkoutSlot" value={slot.start} checked={selectedStart === slot.start} onChange={() => setSelectedStart(slot.start)} /><span>{slot.label}</span></label>)}</div> : <p className="availability-empty">No delivery windows are open for this date. Pick another day and check again.</p>}</div>}
+            {availabilityStatus && <p className="availability-status" role="status" aria-live="polite">{availabilityStatus}</p>}
             <label className="form-field"><span>Delivery notes <small>optional</small></span><textarea value={delivery.notes} onChange={(e) => updateDelivery("notes", e.target.value)} maxLength={800} rows={3} placeholder="Unit number, buzzer, or anything useful" /></label>
           </div>}
         </section>
@@ -282,3 +352,4 @@ export default function PaymentsPage() {
     </div> : <div className="payment-empty"><h2>No saved order yet.</h2><p>Choose a card or 3D-printed gift first, then continue to checkout.</p><Link href="/gifts" className="round-button">Browse AH Gifts <span className="css-arrow" /></Link></div>}
   </section>
 }
+

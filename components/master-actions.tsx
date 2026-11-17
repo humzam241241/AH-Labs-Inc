@@ -27,10 +27,10 @@ export function PaymentConfirmation({ orderId, alreadyPaid }: { orderId: string;
     setBusy(true); setMessage("")
     const response = await fetch(`/api/master/orders/${orderId}/payment`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ totalCents }) })
     const data = await response.json().catch(() => ({}))
-    setMessage(response.ok ? `Paid — ${data.invoiceNumber}; ${data.points} points added.` : data.message || "Could not confirm payment.")
+    setMessage(response.ok ? `e-Transfer confirmed — ${data.invoiceNumber}; ${data.points} points added. Fulfillment remains separate.` : data.message || "Could not confirm payment.")
     if (response.ok) window.setTimeout(() => window.location.reload(), 650)
     else setBusy(false)
   }
   if (alreadyPaid) return <span className="status-chip approved">Paid</span>
-  return <div className="master-payment"><input aria-label="Paid amount in CAD" inputMode="decimal" placeholder="Amount CAD" value={amount} onChange={(event) => setAmount(event.target.value)} /><button disabled={busy} onClick={confirm} className="button-primary">Confirm payment</button>{message && <small>{message}</small>}</div>
+  return <div className="master-payment"><input aria-label="Paid amount in CAD" inputMode="decimal" placeholder="Amount CAD" value={amount} onChange={(event) => setAmount(event.target.value)} /><button disabled={busy} onClick={confirm} className="button-primary">Confirm e-Transfer</button>{message && <small>{message}</small>}</div>
 }
