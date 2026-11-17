@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient()
-  await supabase.auth.signOut()
+  await supabase.auth.signOut({ scope: "global" })
 
   if (request.headers.get("accept")?.includes("application/json")) {
     return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } })
