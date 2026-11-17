@@ -336,3 +336,5 @@ a{color:inherit}
 
 
 .dashboard-order-specs{display:grid;gap:.45rem;margin:0 0 1rem;padding:0;list-style:none}.dashboard-order-specs li{display:grid;gap:.15rem;padding:.65rem .75rem;border-left:3px solid var(--organic-terracotta);border-radius:0 10px 10px 0;background:rgba(232,220,199,.72)}.dashboard-order-specs strong{font-size:.86rem}.dashboard-order-specs span{color:#69725f;font-size:.78rem;line-height:1.4}
+
+.order-number-field{display:grid;gap:.35rem;color:#59634f;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.order-number-field input{width:min(20rem,100%);box-sizing:border-box;border:1px solid rgba(96,108,56,.3);border-radius:10px;background:var(--organic-sand);color:var(--organic-ink);padding:.62rem .65rem;font:inherit;text-transform:none;letter-spacing:normal}
