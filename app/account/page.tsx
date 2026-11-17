@@ -18,13 +18,32 @@ function safeNext(value?: string) { return value && value.startsWith("/") && !va
 function money(cents: number | null, currency = "CAD") { return cents == null ? "Pending quote" : new Intl.NumberFormat("en-CA", { style: "currency", currency }).format(cents / 100) }
 function date(value: string | null, withTime = false) { return value ? new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", ...(withTime ? { timeStyle: "short" as const, timeZone: "America/Toronto" } : {}) }).format(new Date(value)) : "Not scheduled" }
 function itemNames(items: unknown) { return Array.isArray(items) ? items.map((item) => item && typeof item === "object" ? (item as { productName?: string; name?: string }).productName || (item as { name?: string }).name : "").filter(Boolean).join(", ") || "Custom AH Gifts order" : "Custom AH Gifts order" }
+function itemSummaries(items: unknown) {
+  if (!Array.isArray(items)) return [] as Array<{ label: string; detail: string }>
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return null
+    const row = item as Record<string, unknown>
+    const label = String(row.productName || row.name || "Custom item")
+    const quantity = Math.min(28, Math.max(1, Math.round(Number(row.quantity) || 1)))
+    const detail = [
+      row.dimensions,
+      row.customDimensions,
+      row.sizeOption,
+      row.quality,
+      row.message ? `Message: ${String(row.message)}` : "",
+      row.details ? `Notes: ${String(row.details)}` : "",
+    ].filter(Boolean).join(" · ")
+    return { label: `${quantity} × ${label}`, detail }
+  }).filter(Boolean) as Array<{ label: string; detail: string }>
+}
 
 function AccountUnavailable() {
   return <section className="account-page"><div className="site-shell account-shell"><div className="account-config-state"><p className="eyebrow">AH Gifts account</p><h1>Account sign-in is being enabled.</h1><p>The store is available, but this production project still needs its secure Supabase environment variables.</p><Link href="/gifts" className="round-button">Continue shopping <span className="css-arrow" aria-hidden="true" /></Link></div></div></section>
 }
 
 function OrderCard({ order, past = false }: { order: Order; past?: boolean }) {
-  return <article className="dashboard-order-card"><div className="dashboard-order-top"><div><p className="eyebrow">{order.order_number}</p><h3>{itemNames(order.items)}</h3></div><span className={`status-chip ${terminalStatuses.has(String(order.status).toLowerCase()) ? "" : "approved"}`}>{String(order.status || "pending").replaceAll("_", " ")}</span></div><dl><div><dt>Placed</dt><dd>{date(order.created_at)}</dd></div><div><dt>Total</dt><dd>{money(order.total_cents, order.currency || "CAD")}</dd></div><div><dt>Delivery</dt><dd>{date(order.delivery_window_start, true)}</dd></div></dl><div className="dashboard-order-actions"><Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>{past ? "Order again" : "View specifications"} <i className="css-arrow" aria-hidden="true" /></Link></div></article>
+  const summaries = itemSummaries(order.items)
+  return <article className="dashboard-order-card"><div className="dashboard-order-top"><div><p className="eyebrow">{order.order_number}</p><h3>{itemNames(order.items)}</h3></div><span className={`status-chip ${terminalStatuses.has(String(order.status).toLowerCase()) ? "" : "approved"}`}>{String(order.status || "pending").replaceAll("_", " ")}</span></div><dl><div><dt>Placed</dt><dd>{date(order.created_at)}</dd></div><div><dt>Total</dt><dd>{money(order.total_cents, order.currency || "CAD")}</dd></div><div><dt>Delivery</dt><dd>{date(order.delivery_window_start, true)}</dd></div></dl>{summaries.length > 0 && <ul className="dashboard-order-specs">{summaries.map((summary, index) => <li key={index}><strong>{summary.label}</strong>{summary.detail && <span>{summary.detail}</span>}</li>)}</ul>}<div className="dashboard-order-actions"><Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>{past ? "Order again" : "View specifications"} <i className="css-arrow" aria-hidden="true" /></Link></div></article>
 }
 
 export default async function AccountPage({ searchParams }: Props) {
