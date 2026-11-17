@@ -48,7 +48,12 @@ export function SessionGuard() {
 
     const initialise = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {\n        initialised = true\n        return\n      }\n\n      const hadTabSession = sessionStorage.getItem(TAB_SESSION_KEY) === "1"
+      if (!session) {
+        initialised = true
+        return
+      }
+
+      const hadTabSession = sessionStorage.getItem(TAB_SESSION_KEY) === "1"
       const oauthPending = sessionStorage.getItem(OAUTH_PENDING_KEY) === "1"
 
       if (!hadTabSession && !oauthPending) {
