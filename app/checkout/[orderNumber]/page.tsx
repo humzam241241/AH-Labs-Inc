@@ -21,6 +21,11 @@ type OrderItem = {
   sizeOption?: string
   quality?: string
   pricing?: Pricing
+  fulfillment?: {
+    method?: "shipping" | "delivery"
+    shipping?: { name?: string; address?: string; city?: string; province?: string; postalCode?: string }
+    delivery?: { address?: string }
+  }
 }
 
 const money = (cents: number | null | undefined, currency = "CAD") => cents == null ? "Pending quote" : new Intl.NumberFormat("en-CA", { style: "currency", currency }).format(cents / 100)
@@ -41,7 +46,12 @@ export default async function CheckoutConfirmationPage({ params }: { params: { o
   const item = (Array.isArray(order.items) ? order.items[0] : null) as OrderItem | null
   const pricing = item?.pricing ?? {}
   const interacEmail = process.env.NEXT_PUBLIC_INTERAC_EMAIL?.trim() || ""
-  const fulfillment = order.delivery_address ? "Local delivery" : "Shipping"
+  const fulfillmentMethod = item?.fulfillment?.method || (order.delivery_address ? "delivery" : "shipping")
+  const fulfillment = fulfillmentMethod === "delivery" ? "Local delivery" : "Shipping"
+  const shipping = item?.fulfillment?.shipping
+  const fulfillmentAddress = fulfillmentMethod === "delivery"
+    ? item?.fulfillment?.delivery?.address || order.delivery_address
+    : shipping ? [shipping.name, shipping.address, shipping.city, shipping.province, shipping.postalCode].filter(Boolean).join(", ") : null
   const deliveryTime = order.delivery_window_start
     ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }).format(new Date(order.delivery_window_start))
     : null
@@ -64,6 +74,7 @@ export default async function CheckoutConfirmationPage({ params }: { params: { o
           {(item?.sizeOption || item?.dimensions) && <div><dt>Size</dt><dd>{item.sizeOption || item.dimensions}</dd></div>}
           {item?.quality && <div><dt>Quality</dt><dd>{item.quality}</dd></div>}
           <div><dt>Fulfillment</dt><dd>{fulfillment}</dd></div>
+          {fulfillmentAddress && <div><dt>{fulfillmentMethod === "delivery" ? "Delivery address" : "Ship to"}</dt><dd>{fulfillmentAddress}</dd></div>}
           {deliveryTime && <div><dt>Delivery window</dt><dd>{deliveryTime}</dd></div>}
         </dl>
         <div className="checkout-totals checkout-receipt-totals">
