@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     const pricing = await calculateCheckoutPricing(access.account.user.id, orderDraft, body.promoCode)
     const result = await callDeliveryCalendar("book", { customerName, phone, email, address, order, notes, slotStart, requestId })
-    const orderNumber = await saveCustomerOrder({ customerId: access.account.user.id, address, orderDraft, notes, slotStart, result, pricing })
+    const orderNumber = await saveCustomerOrder({ customerId: access.account.user.id, customerName, phone, email, address, orderDraft, notes, slotStart, result, pricing })
     return NextResponse.json({ ...result, orderNumber, pricing })
   } catch (error) {
     const message = error instanceof Error ? error.message : "The delivery could not be booked."
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function saveCustomerOrder(input: { customerId: string; address: string; orderDraft: Record<string, unknown>; notes: string; slotStart: string; result: Record<string, unknown>; pricing: CheckoutPricing }) {
+async function saveCustomerOrder(input: { customerId: string; customerName: string; phone: string; email: string; address: string; orderDraft: Record<string, unknown>; notes: string; slotStart: string; result: Record<string, unknown>; pricing: CheckoutPricing }) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) throw new Error("Order storage is not configured.")
   const admin = createSupabaseAdminClient()
   const orderNumber = `AH-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`
@@ -81,6 +81,17 @@ async function saveCustomerOrder(input: { customerId: string; address: string; o
     lineSubtotalCents: input.pricing.subtotalCents,
     lineTotalCents: input.pricing.totalCents,
     pricing: input.pricing,
+    fulfillment: {
+      method: "delivery",
+      delivery: {
+        name: input.customerName,
+        phone: input.phone,
+        email: input.email,
+        address: input.address,
+        notes: input.notes,
+        slotStart: input.slotStart,
+      },
+    },
   }
   const { error } = await admin.from("orders").insert({
     customer_id: input.customerId,
