@@ -67,6 +67,7 @@ export async function POST(request: Request) {
       lineSubtotalCents: pricing.subtotalCents,
       lineTotalCents: pricing.totalCents,
       pricing,
+      fulfillment: { method: "shipping", shipping },
     }
     const notes = [
       "Awaiting Interac e-Transfer confirmation.",
