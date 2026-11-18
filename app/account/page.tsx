@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "My account", description: "Manage AH
 export const dynamic = "force-dynamic"
 
 type Props = { searchParams?: { next?: string; auth?: string } }
-type Order = { id: string; order_number: string; status: string | null; items: unknown; total_cents: number | null; currency: string | null; paid_at: string | null; delivery_window_start: string | null; created_at: string }
+type Order = { id: string; order_number: string; status: string | null; items: unknown; total_cents: number | null; currency: string | null; paid_at: string | null; delivery_address: string | null; delivery_window_start: string | null; notes: string | null; created_at: string }
 type Invoice = { id: string; invoice_number: string; status: string; total_cents: number; currency: string; paid_at: string | null; issued_at: string | null; created_at: string }
 type Promo = { id: string; code: string; title: string; description: string | null; discount_label: string; expires_at: string | null; redeemed_at: string | null; active: boolean }
 
@@ -42,7 +42,7 @@ function AccountUnavailable() {
   return <section className="account-page"><div className="site-shell account-shell"><div className="account-config-state"><p className="eyebrow">AH Gifts account</p><h1>Account sign-in is being enabled.</h1><p>The store is available, but this production project still needs its secure Supabase environment variables.</p><Link href="/gifts" className="round-button">Continue shopping <span className="css-arrow" aria-hidden="true" /></Link></div></div></section>
 }
 
-function OrderCard({ order, past = false }: { order: Order; past?: boolean }) {
+function OrderCard({ order, customerName, customerEmail, past = false }: { order: Order; customerName: string; customerEmail: string; past?: boolean }) {
   const summaries = itemSummaries(order.items)
   const status = String(order.status || "pending").toLowerCase()
   const editable = !past && !order.paid_at && (status === "pending" || status === "awaiting_payment")
@@ -51,7 +51,7 @@ function OrderCard({ order, past = false }: { order: Order; past?: boolean }) {
     <dl><div><dt>Placed</dt><dd>{date(order.created_at)}</dd></div><div><dt>Total</dt><dd>{money(order.total_cents, order.currency || "CAD")}</dd></div><div><dt>Delivery</dt><dd>{date(order.delivery_window_start, true)}</dd></div></dl>
     {summaries.length > 0 && <ul className="dashboard-order-specs">{summaries.map((summary, index) => <li key={index}><strong>{summary.label}</strong>{summary.detail && <span>{summary.detail}</span>}</li>)}</ul>}
     <div className="dashboard-order-actions">{editable
-      ? <CustomerOrderActions orderId={order.id} orderNumber={order.order_number} items={order.items} />
+      ? <CustomerOrderActions orderId={order.id} orderNumber={order.order_number} items={order.items} deliveryAddress={order.delivery_address} deliveryWindowStart={order.delivery_window_start} orderNotes={order.notes || ""} customerName={customerName} customerEmail={customerEmail} />
       : <Link className="choice-link" href={`/gifts?reorder=${encodeURIComponent(order.id)}`}>{past ? "Order again" : "View specifications"} <i className="css-arrow" aria-hidden="true" /></Link>}
     </div>
   </article>
@@ -81,6 +81,8 @@ export default async function AccountPage({ searchParams }: Props) {
   const pastOrders = orders.filter((order) => terminalStatuses.has(String(order.status).toLowerCase()))
   const upcoming = activeOrders.filter((order) => order.delivery_window_start && new Date(order.delivery_window_start).getTime() > now)
   const availablePromos = promos.filter((promo) => promo.active && !promo.redeemed_at && (!promo.expires_at || new Date(promo.expires_at).getTime() > now))
+  const customerName = profile.full_name || user.user_metadata?.full_name || ""
+  const customerEmail = user.email || ""
 
   return <section className="account-page"><div className="site-shell account-shell dashboard-shell">
     <div className="card-breadcrumb"><Link href="/gifts">AH Gifts</Link><span>/</span><span>My account</span></div>
@@ -89,7 +91,7 @@ export default async function AccountPage({ searchParams }: Props) {
     <section className="dashboard-metrics" aria-label="Account overview"><article><span>Active orders</span><strong>{activeOrders.length}</strong><small>{activeOrders.length ? "being prepared or awaiting payment" : "nothing in progress"}</small></article><article><span>Next delivery</span><strong className="metric-date">{upcoming[0] ? date(upcoming[0].delivery_window_start) : "None"}</strong><small>{upcoming[0] ? date(upcoming[0].delivery_window_start, true) : "no delivery scheduled"}</small></article><article><span>Reward points</span><strong>{rewards?.points_balance || 0}</strong><small>1 point per paid CAD dollar</small></article><article><span>Promo codes</span><strong>{availablePromos.length}</strong><small>available to use</small></article></section>
 
     <div className="dashboard-grid">
-      <section className="dashboard-panel dashboard-panel-wide"><div className="dashboard-section-heading"><div><p className="eyebrow">In progress</p><h2>Current orders</h2></div><Link href="/gifts" className="round-button">Shop gifts <span className="css-arrow" aria-hidden="true" /></Link></div>{activeOrders.length ? <div className="dashboard-order-list">{activeOrders.map((order) => <OrderCard key={order.id} order={order} />)}</div> : <div className="dashboard-empty"><h3>No active orders.</h3><p>Your submitted and paid orders will be tracked here from request through delivery.</p><Link href="/gifts" className="choice-link">Browse the shop <i className="css-arrow" aria-hidden="true" /></Link></div>}</section>
+      <section className="dashboard-panel dashboard-panel-wide"><div className="dashboard-section-heading"><div><p className="eyebrow">In progress</p><h2>Current orders</h2></div><Link href="/gifts" className="round-button">Shop gifts <span className="css-arrow" aria-hidden="true" /></Link></div>{activeOrders.length ? <div className="dashboard-order-list">{activeOrders.map((order) => <OrderCard key={order.id} order={order} customerName={customerName} customerEmail={customerEmail} />)}</div> : <div className="dashboard-empty"><h3>No active orders.</h3><p>Your submitted and paid orders will be tracked here from request through delivery.</p><Link href="/gifts" className="choice-link">Browse the shop <i className="css-arrow" aria-hidden="true" /></Link></div>}</section>
 
       <section className="dashboard-panel"><p className="eyebrow">Next up</p><h2>Upcoming deliveries</h2>{upcoming.length ? <div className="delivery-timeline">{upcoming.map((order) => <article key={order.id}><strong>{date(order.delivery_window_start, true)}</strong><span>{order.order_number}</span><small>{itemNames(order.items)}</small></article>)}</div> : <div className="dashboard-empty compact"><h3>No delivery booked.</h3><p>Choose local delivery during checkout to reserve an available window.</p></div>}</section>
 
@@ -99,7 +101,7 @@ export default async function AccountPage({ searchParams }: Props) {
 
       <section className="dashboard-panel"><p className="eyebrow">Security</p><h2>Login & password</h2><div className="account-security"><div className="google-mark" aria-hidden="true">G</div><div><strong>Signed in with Google</strong><p>{user.email}</p></div></div><p className="dashboard-note">AH Gifts does not store a separate password. Change your password or security settings through your Google account.</p></section>
 
-      <section className="dashboard-panel dashboard-panel-wide"><p className="eyebrow">Your history</p><h2>Past orders</h2>{pastOrders.length ? <div className="dashboard-order-list">{pastOrders.map((order) => <OrderCard key={order.id} order={order} past />)}</div> : <div className="dashboard-empty compact"><h3>No completed orders yet.</h3><p>Delivered and completed purchases will stay here for quick reordering.</p></div>}</section>
+      <section className="dashboard-panel dashboard-panel-wide"><p className="eyebrow">Your history</p><h2>Past orders</h2>{pastOrders.length ? <div className="dashboard-order-list">{pastOrders.map((order) => <OrderCard key={order.id} order={order} customerName={customerName} customerEmail={customerEmail} past />)}</div> : <div className="dashboard-empty compact"><h3>No completed orders yet.</h3><p>Delivered and completed purchases will stay here for quick reordering.</p></div>}</section>
     </div>
   </div></section>
 }
